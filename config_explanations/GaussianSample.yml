@@ -1,0 +1,20 @@
+
+sampling:
+    sampler: "Gaussian"
+    STD: 1
+    sample_number: 100
+    variables: "all"
+    input_size: 4
+    output_num: 2
+
+
+surrigate_params:
+    model_type: "Lasso"
+    learning_rate: 0.1
+    regularizer: 0.001
+    num_epochs: 500
+    input_size: 4
+    distance_kernel: "L2"
+    sigma: 1
+
+
