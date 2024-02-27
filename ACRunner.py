@@ -58,15 +58,15 @@ if __name__ == "__main__":
         )
         rewards = []
         print(state)
-        # for t in range(1000):  # Maximum number of steps per episode
+        for t in range(1000):  # Maximum number of steps per episode
 
-        #     action = model.policy.act(state)
-        #     state, reward, terminated, truncated, info = env.step(action)
-        #     rewards.append(reward)
-        #     if terminated:
-        #         print("done, reward:", sum(rewards))
-        #         print(rewards)
-        #         break
+            action = model.policy.act(state)
+            state, reward, terminated, truncated, info = env.step(action)
+            rewards.append(reward)
+            if terminated:
+                print("done, reward:", sum(rewards))
+                print(rewards)
+                break
     env.close()
 
 
