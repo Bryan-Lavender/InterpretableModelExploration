@@ -40,10 +40,8 @@ parser.add_argument("--run_basic_tests", required=False, type=bool)
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    config_file = open("config_envs/{}.yml".format("cartpole"))
+    config_file = open("config_explanations/{}.yml".format("CartPole_Gaussian_All"))
     config = yaml.load(config_file, Loader=yaml.FullLoader)
-    config_file2 = open("config_explanations/{}.yml".format("GaussianSample"))
-    config2 = yaml.load(config_file2, Loader=yaml.FullLoader)
 
     env1 = gym.make(config["env"]["env_name"], render_mode="rgb_array")
     env2 = gym.make(config["env"]["env_name"], render_mode="rgb_array")
@@ -52,7 +50,7 @@ if __name__ == "__main__":
     
     model.network.load_state_dict(weight_dict_corrector(torch.load(config["output"]["actor_output"].format(seed))))
     model.baseline_network.load_state_dict(torch.load(config["output"]["critic_output"].format(seed)))
-    LimeModel = LimeModel(model.network, torch.tensor([0.,0.,0.,0.]), config2)
+    LimeModel = LimeModel(model.network, torch.tensor([0.,0.,0.,0.]), config)
     t = 0
     for i in LimeModel.interpretable_models:
         if t == 0:
@@ -71,7 +69,7 @@ if __name__ == "__main__":
         state1, info1 = env1.reset()
         env1 = gym.wrappers.RecordVideo(
             env1,
-            "runs\VIDYAenv1",
+            config["explanation_output"]["policy_video"],
             step_trigger=lambda x: x % 100 == 0,
         )
         rewards1 = []
@@ -79,7 +77,7 @@ if __name__ == "__main__":
         state2, info2 = env2.reset()
         env2 = gym.wrappers.RecordVideo(
             env2,
-            "runs\VIDYAenv2",
+            config["explanation_output"]["exp_video"],
             step_trigger=lambda x: x % 100 == 0,
         )
         rewards2 = []
@@ -130,9 +128,9 @@ if __name__ == "__main__":
             if not (term_1 or term_2):
                 break
             
-        np.save("runs/state_diffs.np",np.array(state_diffs))
-        np.save("runs/action_diffs.np",np.array(action_diffs))
-        np.save("runs/reward_diffs.np",np.array(reward_diffs))
-        np.save("runs/MainPolicyDiff.np", np.array(MainPolicyActionDiff))
+        np.save(config["explanation_output"]["state_dist"],np.array(state_diffs))
+        np.save(config["explanation_output"]["action_dist"],np.array(action_diffs))
+        np.save(config["explanation_output"]["reward_dist"],np.array(reward_diffs))
+        np.save(config["explanation_output"]["policy_dist"], np.array(MainPolicyActionDiff))
 
     env1.close()

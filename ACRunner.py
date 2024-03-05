@@ -57,16 +57,20 @@ if __name__ == "__main__":
             step_trigger=lambda x: x % 100 == 0,
         )
         rewards = []
+        states = []
         print(state)
         for t in range(1000):  # Maximum number of steps per episode
 
             action = model.policy.act(state)
+            states.append(state)
             state, reward, terminated, truncated, info = env.step(action)
             rewards.append(reward)
             if terminated:
                 print("done, reward:", sum(rewards))
                 print(rewards)
                 break
+    print(len(states))
+    np.save("state_list",np.stack(states))
     env.close()
 
 

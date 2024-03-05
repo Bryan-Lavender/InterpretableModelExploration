@@ -47,7 +47,7 @@ class PolicyGradient(object):
         self.lr = self.config["hyper_params"]["learning_rate"]
 
         self.device = torch.device("cpu")
-        if config["model_training"]["device"] == "gpu":
+        if config["model_training"]["device"] == "cuda":
             if torch.cuda.is_available(): 
                 self.device = torch.device("cuda")
             elif torch.backends.mps.is_available() and torch.backends.mps.is_built():

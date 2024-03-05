@@ -13,6 +13,7 @@ class LassoRegression(nn.Module):
         self.num_epochs = config['num_epochs']
         self.linear = nn.Linear(config['input_size'], 1, bias=False)
         self.sigma = config['sigma']
+        self.use_dist = config['use_dist']
     def forward(self, X):
         out = self.linear(X)
         return out
@@ -39,12 +40,18 @@ class LassoRegression(nn.Module):
             MSE = (1/len(X)) * torch.sum((self.forward(X).flatten() - Y)**2)
             RMSE = torch.sqrt((1/len(X)) * torch.sum((self.forward(X).flatten() - Y)**2))
             R_Squared = 1 - (MSE/torch.var(Y))
-            return([MAE, MSE, RMSE, R_Squared])
+            return([MAE.item(), MSE.item(), RMSE.item(), R_Squared.item()])
 
     def pis_func(self,point_of_interest, x):
         D = (torch.cdist(point_of_interest, x)**2)/(self.sigma**2)
         return torch.exp(-D)
+        
     
     def CustLoss(self, point_of_interest, x, y_pred, Y):
+        point_of_interest = torch.tensor(point_of_interest)
         pis = self.pis_func(point_of_interest.unsqueeze(0).to("cuda"), x)
-        return torch.sum(pis*((y_pred - Y)**2))
+        if self.use_dist:
+            return torch.sum(pis*((y_pred - Y)**2))
+        else:
+            loss = torch.nn.MSELoss()
+            return loss(y_pred, Y)
