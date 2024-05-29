@@ -27,12 +27,13 @@ if __name__ == "__main__":
     if args.config_filename is not None:
         config_file = open("config_envs/{}.yml".format(args.config_filename))
         config = yaml.load(config_file, Loader=yaml.FullLoader)
+        
 
         for seed in config["env"]["seed"]:
             torch.random.manual_seed(seed)
             np.random.seed(seed)
             random.seed(seed)
-
+            print(config["env"]["env_name"])
             env = gym.make(config["env"]["env_name"])
 
             # train model
