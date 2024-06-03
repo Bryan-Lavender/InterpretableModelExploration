@@ -69,6 +69,7 @@ if __name__ == "__main__":
                 print("done, reward:", sum(rewards))
                 print(rewards)
                 break
+    
     print(len(states))
     np.save("state_list",np.stack(states))
     env.close()
