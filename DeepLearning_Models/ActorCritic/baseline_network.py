@@ -10,15 +10,15 @@ class BaselineNetwork(nn.Module):
     Class for implementing Baseline network
 
     Args:
-        env (): OpenAI gym environment
+       
         config (dict): A dictionary containing generated from reading a yaml configuration file
 
     """
 
-    def __init__(self, env, config):
+    def __init__(self,  config):
         super().__init__()
         self.config = config
-        self.env = env
+      
         self.lr = self.config["hyper_params"]["learning_rate"]
         self.device = torch.device("cpu")
         if self.config["model_training"]["device"] == "gpu":
@@ -28,7 +28,7 @@ class BaselineNetwork(nn.Module):
                 self.device = torch.device("mps")
 
    
-        input_size = self.env.observation_space.shape[0]
+        input_size = config["env"]["obs_dim"]
         output_size = 1  
         self.network = build_mlp(input_size, output_size, config['hyper_params']['n_layers'], config['hyper_params']['layer_size']).to(self.device)
         self.optimizer = torch.optim.Adam(self.network.parameters(), lr=config['hyper_params']['learning_rate'])

@@ -25,7 +25,7 @@ class BaseSampler(ABC):
     
 
 class GaussianSampler(BaseSampler):
-    def __init__(self, variance = 1):
+    def __init__(self, variance):
         BaseSampler.__init__(self)
    
         self.variance = variance

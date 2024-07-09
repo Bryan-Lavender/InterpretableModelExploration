@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-import gym
+
 import os
 from ..utils.general import get_logger, Progbar, export_plot
 from ..utils.network_utils import np2torch
@@ -16,13 +16,14 @@ class PolicyGradient(object):
     Initialize Policy Gradient Class
 
     Args:
-            env (): an OpenAI Gym environment
+            env_runner (method): method to sample an exectution of the policy
+            env_recorder (method): method to record and save an execution of the policy
             config (dict): class with hyperparameters
             logger (): logger instance from the logging module
             seed (int): fixed seed
     """
 
-    def __init__(self, env, config, seed, logger=None):
+    def __init__(self, env_runner, env_recorder, config, seed, logger=None):
         # directory for training outputs
         if not os.path.exists(config["output"]["output_path"].format(seed)):
             os.makedirs(config["output"]["output_path"].format(seed))
@@ -34,20 +35,17 @@ class PolicyGradient(object):
         self.logger = logger
         if logger is None:
             self.logger = get_logger(config["output"]["log_path"].format(seed))
-        self.env = env
-        self.env.reset(seed=self.seed)
+        
 
         # discrete vs continuous action space
-        self.discrete = isinstance(env.action_space, gym.spaces.Discrete)
-        self.observation_dim = self.env.observation_space.shape[0]
-        self.action_dim = (
-            self.env.action_space.n if self.discrete else self.env.action_space.shape[0]
-        )
+        self.discrete = config["env"]["discrete"]
+        self.observation_dim = config["env"]["obs_dim"]
+        self.action_dim = config["env"]["action_dim"]
 
         self.lr = self.config["hyper_params"]["learning_rate"]
 
         self.device = torch.device("cpu")
-        if config["model_training"]["device"] == "gpu":
+        if config["model_training"]["device"] == "cuda" or config["model_training"]["device"] == "gpu":
             if torch.cuda.is_available(): 
                 self.device = torch.device("cuda")
             elif torch.backends.mps.is_available() and torch.backends.mps.is_built():
@@ -56,7 +54,7 @@ class PolicyGradient(object):
         self.init_policy()
 
         if config["model_training"]["use_baseline"]:
-            self.baseline_network = BaselineNetwork(env, config).to(self.device)
+            self.baseline_network = BaselineNetwork(config).to(self.device)
 
         try:
             if self.config["model_training"]["compile"] == True:
@@ -67,12 +65,9 @@ class PolicyGradient(object):
                 print("Model compiled")
         except Exception as err:
             print(f"Model compile not supported: {err}")
-
+        self.env_runner = env_runner
+        self.env_recorder = env_recorder
     def init_policy(self):
-
-
-       
-      
         self.network = build_mlp(self.observation_dim, self.action_dim, self.config['hyper_params']['n_layers'], self.config['hyper_params']['layer_size'])
         self.network.to(self.device)
 
@@ -112,14 +107,19 @@ class PolicyGradient(object):
     def record_summary(self, t):
         pass
 
-    def sample_path(self, env, num_episodes=None):
+    def sample_path(self, num_episodes=None):
         """
-        Sample paths (trajectories) from the environment.
-
+        Sample paths (trajectories) from the environment. expects a list of dictionaries following 
+        path = {
+                "observation": np.array(states),
+                "reward": np.array(rewards),
+                "action": np.array(actions),
+            } 
+        for a single episode
         Args:
             num_episodes (int): the number of episodes to be sampled
                 if none, sample one batch (size indicated by config file)
-            env (): open AI Gym envinronment
+            
 
         Returns:
             paths (list): a list of paths. Each path in paths is a dictionary with
@@ -134,38 +134,18 @@ class PolicyGradient(object):
         episode_rewards = []
         paths = []
         t = 0
-
-        while num_episodes or t < self.config["hyper_params"]["batch_size"]:
-            state, info = env.reset()
-            states, actions, rewards = [], [], []
-            episode_reward = 0
-
-            for step in range(self.config["hyper_params"]["max_ep_len"]):
-                states.append(state)
-                
-                action = self.policy.act(states[-1][None])[0]
-                state, reward, terminated, truncated, info = env.step(action)
-                actions.append(action)
-                rewards.append(reward)
-                episode_reward += reward
-                t += 1
-                if terminated or truncated or step == self.config["hyper_params"]["max_ep_len"] - 1:
-                    episode_rewards.append(episode_reward)
-                    break
-                if (not num_episodes) and t == self.config["hyper_params"][
-                    "batch_size"
-                ]:
-                    break
-
-            path = {
-                "observation": np.array(states),
-                "reward": np.array(rewards),
-                "action": np.array(actions),
-            }
-            paths.append(path)
-            episode += 1
-            if num_episodes and episode >= num_episodes:
-                break
+        if num_episodes != None:
+            while (num_episodes and t < num_episodes):
+                path = self.env_runner()
+                paths.append(path)
+                episode_rewards.append(sum(path["reward"]))
+                t+=1
+        else:
+            while t < self.config["hyper_params"]["batch_size"]:
+                path = self.env_runner()
+                paths.append(path)
+                episode_rewards.append(sum(path["reward"]))
+                t+=1
 
         return paths, episode_rewards
 
@@ -305,11 +285,11 @@ class PolicyGradient(object):
 
         # set policy to device
         self.policy = self.policy.to(self.device)
-       
+
         for t in range(self.config["hyper_params"]["num_batches"]):
 
             # collect a minibatch of samples
-            paths, total_rewards = self.sample_path(self.env)
+            paths, total_rewards = self.sample_path()
             all_total_rewards.extend(total_rewards)
             observations = np.concatenate([path["observation"] for path in paths])
             actions = np.concatenate([path["action"] for path in paths])
@@ -373,9 +353,8 @@ class PolicyGradient(object):
         Not used right now, all evaluation statistics are computed during training
         episodes.
         """
-        if env == None:
-            env = self.env
-        paths, rewards = self.sample_path(env, num_episodes)
+        
+        paths, rewards = self.sample_path(num_episodes)
         avg_reward = np.mean(rewards)
         sigma_reward = np.sqrt(np.var(rewards) / len(rewards))
         if logging:
@@ -389,17 +368,7 @@ class PolicyGradient(object):
         """
         Recreate an env and record a video for one episode
         """
-        env = gym.make(
-            self.config["env"]["env_name"],
-            render_mode="rgb_array"
-        )
-        env.reset(seed=self.seed)
-        env = gym.wrappers.RecordVideo(
-            env,
-            self.config["output"]["record_path"].format(self.seed),
-            step_trigger=lambda x: x % 100 == 0,
-        )
-        self.evaluate(env, 1)
+        self.env_recorder()
 
     def run(self):
         """

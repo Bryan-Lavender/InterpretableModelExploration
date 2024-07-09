@@ -1,20 +1,7 @@
 import torch
 from Explanations_Models.sampling_methods import GaussianSampler, UniformSampler, UniformPolicySampler
-from Explanations_Models.surrogate_models import LassoRegression, DecisionTreeSur
+from Explanations_Models.surrogate_models import LassoRegression
 import numpy as np
-
-
-samplers = {
-    'GaussianSampler': GaussianSampler,
-    'UniformSampler' : UniformSampler,
-    'UniformPolicySampler': UniformPolicySampler
-}
-
-models = {
-    'LassoRegression': LassoRegression,
-    'DecisionTree'   : DecisionTreeSur
-}
-
 
 class LimeModel():
     def __init__(self, model, point, config):
@@ -22,29 +9,21 @@ class LimeModel():
         self.model = model.to(config["model_training"]["device"])
         self.point = point
         self.sampler = GaussianSampler(1)
-
-        try:
-            self.sampler = samplers[config['sampling']['sampler']]
-        except:
-            print("Bad Sampler")
-            exit(1)
-    
-        try:
-            self.surrogate_mod = models[config['surrigate_params']['model_type']]
-        except:
-            print("Bad Model")
-            exit(1)
-        
-        
-        
-        if config['surrigate_params']['model_alg'] == "REG":
-            self.interpretable_models = []
-            for i in range(0, config['sampling']['output_num']):
-                self.interpretable_models.append(self.surrogate_mod(self.point,config['surrigate_params']).to(config["model_training"]["device"]))
+        if config['sampling']['sampler'] == "Gaussian":
+            self.sampler = GaussianSampler(config['sampling']['STD'])
+        elif config['sampling']['sampler'] == "Uniform":
+            self.sampler = UniformSampler()
+        elif config['sampling']['sampler'] == "UniformPolicy":
+            self.sampler = UniformPolicySampler()
         else:
-            self.interpretable_models = self.surrogate_mod(self.point,config['surrigate_params'])
+            print("bad sampler")
+            exit(1)
+        self.interpretable_models = []
 
-        
+        if config['surrigate_params']['model_type'] == "Lasso":
+            for i in range(0, config['sampling']['output_num']):
+                self.interpretable_models.append(LassoRegression(self.point,config['surrigate_params']).to(config["model_training"]["device"]))
+
         self.sample_points = None
     
     def sample(self, config):

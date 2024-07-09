@@ -21,7 +21,7 @@ def build_mlp(input_size, output_size, n_layers, size):
 
     modules = []
 
-
+    
     modules.append(nn.Linear(input_size, size))
     modules.append(nn.ReLU())
 
