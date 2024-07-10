@@ -72,10 +72,10 @@ class GymRunner:
             self.config["env"]["env_name"],
             render_mode="rgb_array"
         )
-        env.reset(seed=self.seed)
+        env.reset(seed=self.config["env"]["seed"])
         env = gym.wrappers.RecordVideo(
             env,
-            self.config["output"]["record_path"].format(self.seed),
+            self.config["output"]["record_path"].format(self.config["env"]["seed"]),
             step_trigger=lambda x: x % 100 == 0,
         )
         self.runner(env = env)

@@ -63,3 +63,8 @@ if __name__ == "__main__":
     runner_thang = GymRunner(config, env)
     model = PolicyGradient(runner_thang.runner, runner_thang.recorder, config, seed)
     runner_thang.init_model(model)
+    if args.task == "train":
+        run_with_record_comparison(model)
+    elif args.task == "run":
+        record(runner_thang)
+    

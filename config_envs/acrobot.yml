@@ -1,8 +1,12 @@
 env:
     env_name: &env_name "Acrobot-v1"
-    record: False
-    seed: &seed [69420,69,420,22]
+    record: True
+    seed: &seed 69420
     min_expected_reward: 200
+    ## NEED TO PUT STATE INFO HERE
+    discrete: True
+    obs_dim: 6
+    action_dim: 3
 
 model_training:
     num_episodes_eval: 5

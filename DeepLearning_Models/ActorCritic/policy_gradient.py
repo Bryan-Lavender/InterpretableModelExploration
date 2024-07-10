@@ -67,6 +67,7 @@ class PolicyGradient(object):
             print(f"Model compile not supported: {err}")
         self.env_runner = env_runner
         self.env_recorder = env_recorder
+        print("device: ",self.device)
     def init_policy(self):
         self.network = build_mlp(self.observation_dim, self.action_dim, self.config['hyper_params']['n_layers'], self.config['hyper_params']['layer_size'])
         self.network.to(self.device)
