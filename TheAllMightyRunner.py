@@ -18,8 +18,7 @@ yaml.add_constructor("!join", join)
 parser = argparse.ArgumentParser()
 
 parser.add_argument("--config_filename", required=False, type=str)
-parser.add_argument("--plot_config_filename", required=False, type=str)
-parser.add_argument("--run_basic_tests", required=False, type=bool)
+parser.add_argument("--task", required=True, type=str)
 
 def weight_dict_corrector(loaded_state_dict):
     new_state_dict = {}
@@ -28,18 +27,39 @@ def weight_dict_corrector(loaded_state_dict):
         new_state_dict[new_key] = value
     return new_state_dict
 
-if __name__ == "__main__":
+"""
+init train
+    args: model (PolicyGradient)
+    fits weights to RL environment
+"""
+def train(model: PolicyGradient):
+    model.train()
 
+
+"""
+init record
+    args: runner (GymRunner)
+    records an execution of the policy
+"""
+def record(runner: GymRunner):
+    runner.recorder()
+
+"""
+init run_with_record_comparison
+    args: model (PolicyGradient)
+    records first and last execution of the model when training
+"""
+def run_with_record_comparison(model: PolicyGradient):
+    model.run()
+
+if __name__ == "__main__":
     args = parser.parse_args()
     config_file = open("config_envs/{}.yml".format(args.config_filename))
     config = yaml.load(config_file, Loader=yaml.FullLoader)
 
     env = gym.make(config["env"]["env_name"], render_mode="rgb_array")
-    seed = config["env"]["seed"][0]
+    seed = config["env"]["seed"]
     
     runner_thang = GymRunner(config, env)
     model = PolicyGradient(runner_thang.runner, runner_thang.recorder, config, seed)
     runner_thang.init_model(model)
-
-    print(model.sample_path(2))
-
