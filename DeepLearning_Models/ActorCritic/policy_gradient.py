@@ -314,7 +314,7 @@ class PolicyGradient(object):
             # compute reward statistics for this batch and log
             avg_reward = np.mean(total_rewards)
             sigma_reward = np.sqrt(np.var(total_rewards) / len(total_rewards))
-            msg = "{:01.0f}/{:01.0f} : Average reward: {:04.2f} +/- {:04.2f}".format(
+            msg = "{:06d}/{:06d} : Average reward: {:04.2f} +/- {:04.2f}".format(
                 t, self.config["hyper_params"]["num_batches"], avg_reward, sigma_reward
             )
             averaged_total_rewards.append(avg_reward)
