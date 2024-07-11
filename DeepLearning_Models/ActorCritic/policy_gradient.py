@@ -140,13 +140,13 @@ class PolicyGradient(object):
                 path = self.env_runner()
                 paths.append(path)
                 episode_rewards.append(sum(path["reward"]))
-                t+=1
+                t += len(path["observation"])
         else:
             while t < self.config["hyper_params"]["batch_size"]:
                 path = self.env_runner()
                 paths.append(path)
                 episode_rewards.append(sum(path["reward"]))
-                t+=1
+                t += len(path["observation"])
 
         return paths, episode_rewards
 

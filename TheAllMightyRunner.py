@@ -57,7 +57,7 @@ if __name__ == "__main__":
     config_file = open("config_envs/{}.yml".format(args.config_filename))
     config = yaml.load(config_file, Loader=yaml.FullLoader)
 
-    env = gym.make(config["env"]["env_name"], render_mode="rgb_array")
+    env = gym.make(config["env"]["env_name"])
     seed = config["env"]["seed"]
     
     runner_thang = GymRunner(config, env)

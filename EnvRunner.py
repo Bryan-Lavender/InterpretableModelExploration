@@ -30,6 +30,7 @@ class GymRunner:
         self.env = env
         self.model = model
         self.config = config
+        self.video_tag = 0
     """
     init runner:
     args: 
@@ -62,7 +63,7 @@ class GymRunner:
             
         return {"observation": np.array(states), "reward": np.array(rewards), "action": np.array(actions)}
 
-    def recorder(self):
+    def recorder(self, i = 0):
         """
         Recorder:
         Creates video of an execution. Uses a temporary env from GYM to do so.
@@ -75,10 +76,12 @@ class GymRunner:
         env.reset(seed=self.config["env"]["seed"])
         env = gym.wrappers.RecordVideo(
             env,
-            self.config["output"]["record_path"].format(self.config["env"]["seed"]),
-            step_trigger=lambda x: x % 100 == 0,
+            self.config["output"]["record_path"].format(self.config["env"]["seed"]) + "_" + str(self.video_tag),
+            step_trigger=lambda x: x == 0,
         )
+        self.video_tag += 1
         self.runner(env = env)
+        env.close()
 
     
 
