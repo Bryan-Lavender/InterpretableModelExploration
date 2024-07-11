@@ -22,10 +22,10 @@ hyper_params:
     max_ep_len: 700 # maximum episode length (Note: this value must be strictly less than or equal to our batch size)
     num_batches: 150 # number of batches trained on
     batch_size: 2000 # number of steps used to compute each policy update
-    learning_rate: 0.03
+    learning_rate: 0.001
     gamma: 0.9 # the discount factor
     n_layers: 4
-    layer_size: 32
+    layer_size: 64
 
 output:
     output_path: &output_path !join ["ModelWeights/", *env_name, "-{}-"]
