@@ -1,0 +1,18 @@
+surrogate:
+    classifier: True
+    criterion: "gini" # possible: {“gini”, “entropy”, “log_loss”}
+  
+sampler:
+    sample_type: "Uniform" #possible: {"Policy", "Uniform", "Gaussian"}
+    #NEEDED GENERALLY
+    num_samples: 60
+
+    #NEEDED FOR UNIFORM
+    bounds: [[-4.8000002e+00, -3.4028235e+2, -4.1887903e-01, -3.4028235e+2], [4.8000002e+00, 3.4028235e+2, 4.1887903e-01, 3.4028235e+2]]
+    
+    #NEEDED FOR GAUSSIAN
+    std: 1
+
+    #NEEDED FOR POLICY
+    use_dist: False
+    

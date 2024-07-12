@@ -1,6 +1,6 @@
 import torch
-from Explanations_Models.sampling_methods import GaussianSampler, UniformSampler, UniformPolicySampler
-from Explanations_Models.surrogate_models import LassoRegression
+from .sampling_methods import GaussianSampler, UniformSampler, UniformPolicySampler
+from .surrogate_models import LassoRegression
 import numpy as np
 
 class LimeModel():

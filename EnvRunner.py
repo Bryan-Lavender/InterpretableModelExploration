@@ -26,11 +26,19 @@ different possible env's:
 GymRunner: for openAI's Gym library
 """
 class GymRunner:
-    def __init__(self, config, env, model = None):
-        self.env = env
-        self.model = model
+    def __init__(self, config):
         self.config = config
+        self.env = gym.make(config["env"]["env_name"])
+        seed = config["env"]["seed"]
+        self.model = PolicyGradient(self.runner, self.recorder, config, seed)
         self.video_tag = 0
+
+
+    # def __init__(self, config, env, model = None):
+    #     self.env = env
+    #     self.model = model
+    #     self.config = config
+    #     self.video_tag = 0
     """
     init runner:
     args: 
@@ -39,10 +47,26 @@ class GymRunner:
         dictionary with observations, actions and rewards from a single episode
 
     """
+    def load_weights(self, PATH = None):
+        if PATH == None:
+            PATH_actor = self.config["output"]["actor_output"].format(self.config["env"]["seed"])
+            PATH_critic = self.config["output"]["critic_output"].format(self.config["env"]["seed"])
+        if torch.cuda.is_available():
+            self.model.baseline_network.load_state_dict(torch.load(PATH_critic))
+            self.model.policy.load_state_dict((torch.load(PATH_actor)))
+        else:
+            self.model.baseline_network.load_state_dict(torch.load(PATH_critic,map_location=torch.device('cpu')))
+            self.model.policy.load_state_dict((torch.load(PATH_actor,map_location=torch.device('cpu'))))
+        
     def init_model(self, model):
         self.model = model
-    
-    def runner(self, env = None):
+
+    def actNoDist(self,state):
+        with torch.no_grad():
+            state = torch.tensor(state, dtype = torch.float32).to(self.model.device)
+            return torch.argmax(self.model.network(state)).cpu().numpy()
+
+    def runner(self, env = None, use_dist = True, model = None):
         states = []
         actions = []
         rewards = []
@@ -50,9 +74,18 @@ class GymRunner:
             env = self.env
         else:
             env = env
+
+        if model == None and use_dist:
+            act = self.model.policy.act
+        elif model == None and not use_dist:
+            act = self.actNoDist
+        elif model!= None:
+            act = model.forward
+
+        
         state, info = env.reset()
         for i in range(self.config["hyper_params"]["max_ep_len"]):
-            action = self.model.policy.act(state)
+            action = act(state)
             states.append(state)
             actions.append(action)
             state, reward, terminated, truncated, info = env.step(action)
@@ -63,7 +96,7 @@ class GymRunner:
             
         return {"observation": np.array(states), "reward": np.array(rewards), "action": np.array(actions)}
 
-    def recorder(self, i = 0):
+    def recorder(self, env = None, use_dist = True, model = None):
         """
         Recorder:
         Creates video of an execution. Uses a temporary env from GYM to do so.
@@ -87,5 +120,3 @@ class GymRunner:
 
 
 
-
-            
