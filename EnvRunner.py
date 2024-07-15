@@ -10,7 +10,7 @@ matplotlib.use("agg")
 import matplotlib.pyplot as plt
 import unittest
 from DeepLearning_Models.utils.general import join, plot_combined
-from DeepLearning_Models.ActorCritic.policy_gradient import PolicyGradient
+from DeepLearning_Models.ActorCriticCNN.policy_gradient import PolicyGradient
 
 import random
 import yaml
@@ -52,7 +52,11 @@ class GymRunner:
             env = env
         state, info = env.reset()
         for i in range(self.config["hyper_params"]["max_ep_len"]):
-            action = self.model.policy.act(state)
+
+            state = state.astype('float32')
+            state = np.array([np.transpose(state, (2, 0, 1))])
+            action = self.model.policy.act(state)[0]
+            state = state[0]
             states.append(state)
             actions.append(action)
             state, reward, terminated, truncated, info = env.step(action)
@@ -82,6 +86,11 @@ class GymRunner:
         self.video_tag += 1
         self.runner(env = env)
         env.close()
+
+    def one_hot_encode(self, state):
+        one_hot = np.zeros(self.config["env"]["action_dim"])
+        one_hot[state] = 1
+        return one_hot
 
     
 

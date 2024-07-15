@@ -10,7 +10,7 @@ matplotlib.use("agg")
 import matplotlib.pyplot as plt
 import unittest
 from DeepLearning_Models.utils.general import join, plot_combined
-from DeepLearning_Models.ActorCritic.policy_gradient import PolicyGradient
+from DeepLearning_Models.ActorCriticCNN.policy_gradient import PolicyGradient
 from EnvRunner import GymRunner
 import random
 import yaml
@@ -59,6 +59,8 @@ if __name__ == "__main__":
 
     env = gym.make(config["env"]["env_name"])
     seed = config["env"]["seed"]
+
+    print((config["env"]["obs_dim"]))
     
     runner_thang = GymRunner(config, env)
     model = PolicyGradient(runner_thang.runner, runner_thang.recorder, config, seed)
