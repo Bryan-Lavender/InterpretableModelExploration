@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.distributions as ptd
 import numpy as np
 from array import array
-
+import random
 class Gaussian_Sampler():
     def __init__(self, config, runner):
         self.config = config
@@ -42,5 +42,8 @@ class Policy_Sampler():
         while num_samples > len(samples):
             path = self.runner(use_dist = self.config["sampler"]["use_dist"])
             samples.extend(path["observation"])
-        samples = np.random.choice(samples, num_samples, replace=False)
-        return torch.tensor(samples)
+
+        samples_indicies = random.sample(range(len(samples)), num_samples)
+        return torch.tensor(samples)[samples_indicies]
+
+
