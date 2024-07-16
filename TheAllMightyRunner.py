@@ -60,7 +60,7 @@ if __name__ == "__main__":
     env = gym.make(config["env"]["env_name"])
     seed = config["env"]["seed"]
     
-    runner_thang = GymRunner(config, env)
+    runner_thang = GymRunner(config)
     model = PolicyGradient(runner_thang.runner, runner_thang.recorder, config, seed)
     runner_thang.init_model(model)
     if args.task == "train":
