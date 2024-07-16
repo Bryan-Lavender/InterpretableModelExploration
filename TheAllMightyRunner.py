@@ -10,7 +10,7 @@ matplotlib.use("agg")
 import matplotlib.pyplot as plt
 import unittest
 from DeepLearning_Models.utils.general import join, plot_combined
-from DeepLearning_Models.ActorCriticCNN.policy_gradient import PolicyGradient
+from DeepLearning_Models.ActorCritic.policy_gradient import PolicyGradient
 from EnvRunner import GymRunner
 import random
 import yaml
