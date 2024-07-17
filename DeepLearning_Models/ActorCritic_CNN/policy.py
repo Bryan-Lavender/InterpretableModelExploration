@@ -57,6 +57,7 @@ class BasePolicy(ABC):
         action_dist = self.action_distribution(observations)
         sampled_actions_tensor = action_dist.sample()
         sampled_actions = sampled_actions_tensor.cpu().numpy()
+
         return sampled_actions
 
 

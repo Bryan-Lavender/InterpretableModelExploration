@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import unittest
 from DeepLearning_Models.utils.general import join, plot_combined
 from DeepLearning_Models.ActorCritic.policy_gradient import PolicyGradient
+from DeepLearning_Models.ActorCritic_CNN.policy_gradient import PolicyGradientCNN
 from EnvRunner import GymRunner
 import random
 import yaml
@@ -32,7 +33,7 @@ init train
     args: model (PolicyGradient)
     fits weights to RL environment
 """
-def train(model: PolicyGradient):
+def train(model):
     model.train()
 
 
@@ -41,7 +42,7 @@ init record
     args: runner (GymRunner)
     records an execution of the policy
 """
-def record(runner: GymRunner):
+def record(runner):
     runner.recorder()
 
 """
@@ -49,21 +50,24 @@ init run_with_record_comparison
     args: model (PolicyGradient)
     records first and last execution of the model when training
 """
-def run_with_record_comparison(model: PolicyGradient):
+def run_with_record_comparison(model):
     model.run()
 
 if __name__ == "__main__":
     args = parser.parse_args()
     config_file = open("config_envs/{}.yml".format(args.config_filename))
     config = yaml.load(config_file, Loader=yaml.FullLoader)
-
+    
     env = gym.make(config["env"]["env_name"])
     seed = config["env"]["seed"]
 
-    print((config["env"]["obs_dim"]))
-    
     runner_thang = GymRunner(config, env)
-    model = PolicyGradient(runner_thang.runner, runner_thang.recorder, config, seed)
+
+    if(config["network"]["network_type"] == "cnn"):
+        model = PolicyGradientCNN(runner_thang.runner, runner_thang.recorder, config, seed)
+    else:
+        model = PolicyGradient(runner_thang.runner, runner_thang.recorder, config, seed)
+
     runner_thang.init_model(model)
     if args.task == "train":
         run_with_record_comparison(model)

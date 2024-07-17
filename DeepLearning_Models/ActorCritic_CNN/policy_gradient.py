@@ -4,12 +4,12 @@ import torch
 import os
 from ..utils.general import get_logger, Progbar, export_plot
 from ..utils.network_utils import np2torch
-from ..ActorCriticCNN.baseline_network import BaselineNetwork
-from ..ActorCriticCNN.mlp import build_mlp
-from ..ActorCriticCNN.policy import CategoricalPolicy, GaussianPolicy
+from ..ActorCritic_CNN.baseline_network import BaselineNetwork
+from ..ActorCritic_CNN.cnn_mlp import build_cnn_mlp
+from ..ActorCritic_CNN.policy import CategoricalPolicy, GaussianPolicy
 
 
-class PolicyGradient(object):
+class PolicyGradientCNN(object):
     """
     Class for implementing a policy gradient algorithm
 
@@ -69,8 +69,14 @@ class PolicyGradient(object):
         self.env_recorder = env_recorder
         print("device: ",self.device)
     def init_policy(self):
-        self.network = build_mlp(self.observation_dim, self.action_dim, self.config['hyper_params']['n_layers'], self.config['hyper_params']['layer_size'])
-        self.network.to(self.device)
+        
+        self.network = build_cnn_mlp(
+            self.observation_dim, 
+            self.action_dim, 
+            self.config['hyper_params']['n_layers'], 
+            self.config['hyper_params']['layer_size'], 
+            self.config['network']['network_config']['cnn'],
+        ).to(self.device)
 
         if self.discrete:
             self.policy = CategoricalPolicy(self.network, self.device)
@@ -277,6 +283,7 @@ class PolicyGradient(object):
         a look to see how all the code you've written fits together.
         """
         last_record = 0
+
         self.init_averages()
         all_total_rewards = (
             []

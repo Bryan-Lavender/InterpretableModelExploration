@@ -1,12 +1,21 @@
 env:
-    env_name: &env_name "FrozenLake-v1"
+    env_name: &env_name "MountainCar-v0"
     record: True
-    seed: &seed 69420
+    seed: 69420
+    min_expected_reward: -17
+    ## NEED TO PUT STATE INFO HERE
     discrete: True
-    min_expected_reward: 1
-    obs_dim: 16
-    action_dim: 4
-    open_eyes: False
+    obs_dim: 2
+    action_dim: 3
+
+network:
+    network_type: "normal"
+    network_config:
+        normal:
+        cnn:
+            - {in_channels: 3, out_channels: 4, kernel_size: 5, stride: 1}
+            - {in_channels: 4, out_channels: 2, kernel_size: 3, stride: 1}
+        lstm: 
 
 model_training:
     num_episodes_eval: 5
@@ -18,9 +27,9 @@ model_training:
     compile: False
     compile_mode: "default"
 
-hyper_params:
+hyper_params: 
     max_ep_len: 200 # maximum episode length (Note: this value must be strictly less than or equal to our batch size)
-    num_batches: 500 # number of batches trained on
+    num_batches: 100 # number of batches trained on
     batch_size: 2000 # number of steps used to compute each policy update
     learning_rate: 0.03
     gamma: 0.9 # the discount factor
@@ -28,7 +37,7 @@ hyper_params:
     layer_size: 64
 
 output:
-    output_path: !join &output_path ["ModelWeights/", *env_name, "-{}-"]
+    output_path: &output_path !join ["ModelWeights/", *env_name, "-{}-"]
     actor_output: !join [*output_path, "/actor.weights.pt"]
     critic_output: !join [*output_path, "/critic.weights.pt"]
     log_path: !join [*output_path, "/log.txt"]

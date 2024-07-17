@@ -2,7 +2,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from ..utils.network_utils import np2torch
-from ..ActorCriticCNN.mlp import build_mlp
+from ..ActorCritic_CNN.cnn_mlp import build_cnn_mlp
 
 
 class BaselineNetwork(nn.Module):
@@ -27,10 +27,17 @@ class BaselineNetwork(nn.Module):
             elif torch.backends.mps.is_available() and torch.backends.mps.is_built():
                 self.device = torch.device("mps")
 
-   
         input_size = config["env"]["obs_dim"]
-        output_size = 1  
-        self.network = build_mlp(input_size, output_size, config['hyper_params']['n_layers'], config['hyper_params']['layer_size']).to(self.device)
+        output_size = 1
+
+        self.network = build_cnn_mlp(
+            input_size, 
+            output_size, 
+            config['hyper_params']['n_layers'], 
+            config['hyper_params']['layer_size'], 
+            config['network']['network_config']['cnn'],
+        ).to(self.device)
+
         self.optimizer = torch.optim.Adam(self.network.parameters(), lr=config['hyper_params']['learning_rate'])
         
 

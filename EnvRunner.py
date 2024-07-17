@@ -53,11 +53,15 @@ class GymRunner:
         state, info = env.reset()
         for i in range(self.config["hyper_params"]["max_ep_len"]):
 
-            # state = state.astype('float32')
-            # state = np.array([np.transpose(state, (2, 0, 1))])
-            # action = self.model.policy.act(state)[0]
-            action = self.model.policy.act(state)
-            # state = state[0]
+            if self.config["network"]["network_type"] == "cnn":
+                state = state.astype('float32')
+                state = np.array([np.transpose(state, (2, 0, 1))])
+                action = self.model.policy.act(state)[0]
+                state = state[0]
+
+            else:
+                action = self.model.policy.act(state)
+
             states.append(state)
             actions.append(action)
             state, reward, terminated, truncated, info = env.step(action)
