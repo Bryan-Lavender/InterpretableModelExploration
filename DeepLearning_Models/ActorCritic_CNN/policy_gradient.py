@@ -7,7 +7,7 @@ from ..utils.network_utils import np2torch
 from ..ActorCritic_CNN.baseline_network import BaselineNetwork
 from ..ActorCritic_CNN.cnn_mlp import build_cnn_mlp
 from ..ActorCritic_CNN.policy import CategoricalPolicy, GaussianPolicy
-
+from ..ActorCritic_CNN.replay import ReplayBuffer
 
 class PolicyGradientCNN(object):
     """
@@ -84,6 +84,10 @@ class PolicyGradientCNN(object):
             self.policy = GaussianPolicy(self.network, self.action_dim, self.device)
 
         self.optimizer = torch.optim.Adam(self.policy.parameters(), lr=self.lr)
+        
+        if self.config["model_training"]["use_replay"]:
+            self.replay = ReplayBuffer()
+        
        
 
     def init_averages(self):
@@ -265,6 +269,7 @@ class PolicyGradientCNN(object):
             PyTorch optimizers will try to minimize the loss you compute, but you
             want to maximize the policy's performance.
         """
+        i = 0
         observations = np2torch(observations, device=self.device)
         actions = np2torch(actions, device=self.device)
         advantages = np2torch(advantages, device=self.device)
@@ -282,6 +287,7 @@ class PolicyGradientCNN(object):
         Performs training, you do not have to change or use anything here, but it is worth taking
         a look to see how all the code you've written fits together.
         """
+        # torch.nn.utils.clip_grad_norm_(self.policy.parameters(), max_norm = 1)
         last_record = 0
 
         self.init_averages()
@@ -296,6 +302,7 @@ class PolicyGradientCNN(object):
         for t in range(self.config["hyper_params"]["num_batches"]):
 
             # collect a minibatch of samples
+            
             paths, total_rewards = self.sample_path()
             all_total_rewards.extend(total_rewards)
             observations = np.concatenate([path["observation"] for path in paths])
@@ -303,15 +310,37 @@ class PolicyGradientCNN(object):
             rewards = np.concatenate([path["reward"] for path in paths])
             # compute Q-val estimates (discounted future returns) for each time step
             returns = self.get_returns(paths)
-
-            # advantage will depend on the baseline implementation
             advantages = self.calculate_advantage(returns, observations)
 
             # run training operations
-            if self.config["model_training"]["use_baseline"]:
-                self.baseline_network.update_baseline(returns, observations)
-            self.update_policy(observations, actions, advantages)
+            if self.config["model_training"]["use_replay"]:
+                begin_ent = 0
+                breaker = False
 
+                for i in range(int(np.ceil(len(observations)/self.config["model_training"]["replay_batch_size"]))-1):
+                    end_ent = (i + 1)* self.config["model_training"]["replay_batch_size"]
+                    if end_ent >= len(paths):
+                        end_ent = len(paths)
+                    if end_ent - begin_ent < 3:
+                        end_ent = len(paths)
+                        begin_ent = len(paths) - self.config["model_training"]["replay_batch_size"]
+                        if begin_ent < 0:
+                            begin_ent = 0
+                        breaker = True
+                    if self.config["model_training"]["use_baseline"]:
+                        self.baseline_network.update_baseline(returns[begin_ent:end_ent], observations[begin_ent:end_ent])
+                    self.update_policy(observations[begin_ent:end_ent], actions[begin_ent:end_ent], advantages[begin_ent:end_ent])
+                    begin_ent=end_ent
+                    if breaker:
+                        break
+                    torch.cuda.empty_cache()
+            else:
+                # advantage will depend on the baseline implementation
+                
+                if self.config["model_training"]["use_baseline"]:
+                    self.baseline_network.update_baseline(returns, observations)
+                self.update_policy(observations, actions, advantages)
+            
             # logging
             if t % self.config["model_training"]["summary_freq"] == 0:
                 self.update_averages(total_rewards, all_total_rewards)

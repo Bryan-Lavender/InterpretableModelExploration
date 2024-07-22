@@ -53,6 +53,7 @@ def create_cnn(cnn_settings, modules):
 
         modules.append(convolution)
         modules.append(nn.ReLU())
+        modules.append(nn.MaxPool2d(kernel_size=7))
 
         
 # NOTE: remember that you remobed to.device just to test
@@ -72,6 +73,7 @@ def calculate_conv_dims(cnn_settings, input_size):
         )
 
         temp = convolution(temp)
+        temp = nn.MaxPool2d(kernel_size=7)(temp)
 
     return int(np.prod(temp.size()))
 

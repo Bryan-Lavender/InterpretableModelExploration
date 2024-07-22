@@ -3,7 +3,7 @@ env:
     record: True
     seed: &seed [69420]
     discrete: True
-    min_expected_reward: 200
+    min_expected_reward: 432 # max amount of bricks in the game
     obs_dim: !!python/tuple [3, 210, 160]
     action_dim: 4
     
@@ -12,8 +12,8 @@ network:
     network_config:
         normal:
         cnn:
-            - {in_channels: 3, out_channels: 4, kernel_size: 5, stride: 1}
-            - {in_channels: 4, out_channels: 2, kernel_size: 3, stride: 1}
+            - {in_channels: 3, out_channels: 2, kernel_size: 5, stride: 1}
+            - {in_channels: 2, out_channels: 4, kernel_size: 3, stride: 1}
         lstm: 
 
 model_training:
@@ -21,19 +21,21 @@ model_training:
     record_freq: 5
     summary_freq: 1
     use_baseline: &use_baseline True
-    normalize_advantage: True
+    normalize_advantage: False
     device: "gpu" # cpu/gpu
     compile: False
     compile_mode: "default"
+    use_replay: True
+    replay_batch_size: 15
 
 hyper_params:
-    max_ep_len: 200 # maximum episode length (Note: this value must be strictly less than or equal to our batch size)
-    num_batches: 10 # number of batches trained on
-    batch_size: 2000 # number of steps used to compute each policy update
-    learning_rate: 0.03
-    gamma: 0.9 # the discount factor
-    n_layers: 1
-    layer_size: 64
+    max_ep_len: 27000 # maximum episode length (Note: this value must be strictly less than or equal to our batch size)
+    num_batches: 50000 # number of batches trained on
+    batch_size: 27000 # number of steps used to compute each policy update
+    learning_rate: 0.01
+    gamma: 0.99 # the discount factor
+    n_layers: 2
+    layer_size: 512
 
 output:
     output_path: !join &output_path ["ModelWeights/", *env_name, "-{}-"]
