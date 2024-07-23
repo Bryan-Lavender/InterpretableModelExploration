@@ -310,8 +310,8 @@ class PolicyGradientCNN(object):
             rewards = np.concatenate([path["reward"] for path in paths])
             # compute Q-val estimates (discounted future returns) for each time step
             returns = self.get_returns(paths)
-            advantages = self.calculate_advantage(returns, observations)
-
+            # advantages = self.calculate_advantage(returns, observations)
+            
             # run training operations
             if self.config["model_training"]["use_replay"]:
                 begin_ent = 0
@@ -327,16 +327,17 @@ class PolicyGradientCNN(object):
                         if begin_ent < 0:
                             begin_ent = 0
                         breaker = True
+                    advantages = self.calculate_advantage(returns[begin_ent:end_ent], observations[begin_ent:end_ent])
                     if self.config["model_training"]["use_baseline"]:
                         self.baseline_network.update_baseline(returns[begin_ent:end_ent], observations[begin_ent:end_ent])
-                    self.update_policy(observations[begin_ent:end_ent], actions[begin_ent:end_ent], advantages[begin_ent:end_ent])
+                    self.update_policy(observations[begin_ent:end_ent], actions[begin_ent:end_ent], advantages)
                     begin_ent=end_ent
                     if breaker:
                         break
                     torch.cuda.empty_cache()
             else:
                 # advantage will depend on the baseline implementation
-                
+                advantages = self.calculate_advantage(returns, observations)
                 if self.config["model_training"]["use_baseline"]:
                     self.baseline_network.update_baseline(returns, observations)
                 self.update_policy(observations, actions, advantages)
