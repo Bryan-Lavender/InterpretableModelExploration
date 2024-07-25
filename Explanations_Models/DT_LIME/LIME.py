@@ -5,6 +5,7 @@ import numpy as np
 from sklearn.tree import plot_tree
 import matplotlib
 import matplotlib.pyplot as plt
+import os
 class DecisionTree():
     def __init__(self, config, env_runner):
         if config["surrogate"]["classifier"]:
@@ -25,23 +26,48 @@ class DecisionTree():
         if len(X.shape) == 1:
             is_pass = True
             X = np.array([X])
-            
-            if self.config["surrogate"]["classifier"]:
+            if self.config["surrogate"]["classifier"] and self.config["env"]["discrete"]:
                 return self.model.predict(X)[0]
+            elif not self.config["surrogate"]["classifier"] and self.config["env"]["discrete"]:
+                np.argmax(self.model.predict(X)[0])
             else:
-                return np.argmax(self.model.predict(X)[0])
+                return self.model.predict(X)[0]
+            
         return self.model.predict(X)
 
     def display_tree(self):
         fig = plt.figure(figsize=((25,20)))
         plot_tree(self.model, 
-                feature_names = ["x", "vel", "angle", "angle_vel"],
-                class_names = ["left", "right"],
+                feature_names = self.config["picture"]["labels"],
+                class_names = self.config["picture"]["class_names"],
                 impurity=False,
                 proportion=True,
                 filled=True
                 )
         fig.savefig("daTreeMan.png")
+    
+    def depth_breadth(self):
+        tree = self.model
+        depth_max = tree.tree_.max_depth
+        nodes = [0]
+        widths = [1]
+        for depth in range(depth_max):
+            new_nodes = []
+            for node in nodes:
+                right = tree.tree_.children_right[node]
+                if not right == -1:
+                    new_nodes.append(right)
+                left = tree.tree_.children_left[node]
+                if not left == -1:
+                    new_nodes.append(left)
+            widths.append(len(new_nodes))
+            nodes = new_nodes
+        
+        return (depth_max, max(widths))
+    
+    def get_top_split(self):
+        return self.model.tree_.feature[0]
+    
 
 samplers = {
     "Policy"  : Policy_Sampler,
@@ -68,15 +94,16 @@ class LIME():
             samples = self.sampler.sample().to(self.device)
             if self.config["surrogate"]["classifier"]:
                 Y = torch.argmax(self.deep_model.forward(samples), dim = 1).to("cpu").numpy()
+                arr = [len(Y[Y==i]) for i in range(self.config["env"]["action_dim"])]
             else:
                 Y = self.deep_model.forward(samples).to("cpu").numpy()
+                arr = []
             samples = samples.to("cpu").numpy()
             X = samples
-            print("Dist: 0's / 1's", len(Y[Y==0]), len(Y[Y==1]))
             self.surr_model.fit(X,Y)
     
     #can only test action and state metrics
-    def percent_Correct(self, print_val = True):
+    def percent_Correct(self, print_val = False):
         path = self.env_runner(use_dist = self.config["sampler"]["use_dist"])
         y_pred = self.surr_model.forward(path["observation"])
         y_true = path["action"]
@@ -84,17 +111,38 @@ class LIME():
         if self.config["surrogate"]["classifier"]:
             for i in range(self.config["env"]["action_dim"]):
                 TP += np.sum((y_true == i) & (y_pred == i))
-            
+            total = len(y_true)
+            percent_correct = TP/total
+            if(print_val):
+                print(f"Percent Correct: {percent_correct:.2f}%")
+            return percent_correct
+        else:
+            val = np.mean((y_pred - y_true)**2)
+            return val
 
-        # Calculate percentages
-        total = len(y_true)
-        percent_correct = TP/total
-        if(print_val):
-            print(f"Percent Correct: {percent_correct:.2f}%")
-        return percent_correct
+    
+    def uniform_correct(self, print_val = True):
+        sample_path = "uniform_samples/"+self.config["env"]["env_name"]+"/input_samples.npy"
+        out_path = "uniform_samples/"+self.config["env"]["env_name"]+"/output_samples.npy"
+        if os.path.exists(sample_path):
+            samples = np.load(sample_path)
+            output = np.load(out_path)
+        else:
+            sampler = Uniform_Sampler(self.config, runner = None)
+            samples = sampler.sample(num = 10000)
+            np.save(sample_path, samples.to("cpu").numpy())
+            with torch.no_grad():
+                output = self.surr_model.forward(samples).to("cpu").numpy()
+                np.save(out_path, output)
+        surr_output = self.surr_model.forward(samples)
+        #TODO
+
+        
     
     def absolute_distance(self, print_val= True):
-        self.comparitor(use_dist=self.config["sampler"]["use_dist"], model2 = self.surr_model)
+        return self.comparitor(use_dist=self.config["sampler"]["use_dist"], model2 = self.surr_model)
+    
+    
 
         
     

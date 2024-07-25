@@ -1,0 +1,22 @@
+surrogate:
+    classifier: True
+    criterion: "gini" # possible: {“gini”, “entropy”, “log_loss”} for classifier, {“squared_error”, “friedman_mse”, “absolute_error”, “poisson”}
+    min_split: 2 #[2, +inf)
+  
+sampler:
+    sample_type: "Policy" #possible: {"Policy", "Uniform", "Gaussian"}
+    #NEEDED GENERALLY
+    num_samples: 60
+
+    #NEEDED FOR UNIFORM
+    bounds: [[ -1., -1., -1., -1., -12.566371, -28.274334], [ 1., 1., 1., 1., 12.566371, 28.274334]]
+    
+    #NEEDED FOR GAUSSIAN
+    std: 1
+
+    #NEEDED FOR POLICY
+    use_dist: False
+  
+picture:
+    labels: ["cos_joint1", "sin_joint1", "cos_joint2", "sin_joint2", "ang_vel_joint1", "ang_vel_joint2"]
+    class_names: ["l_tor", "no_tor", "r_tor"]

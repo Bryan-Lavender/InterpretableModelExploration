@@ -1,0 +1,22 @@
+surrogate:
+    classifier: False
+    criterion: "squared_error" # possible: {“gini”, “entropy”, “log_loss”} for classifier, {“squared_error”, “friedman_mse”, “absolute_error”, “poisson”}
+    min_split: 2 #[2, +inf)
+  
+sampler:
+    sample_type: "Policy" #possible: {"Policy", "Uniform", "Gaussian"}
+    #NEEDED GENERALLY
+    num_samples: 10
+
+    #NEEDED FOR UNIFORM
+    bounds: [[-4.8000002e+00, -3.4028235e+2, -4.1887903e-01, -3.4028235e+2], [4.8000002e+00, 3.4028235e+2, 4.1887903e-01, 3.4028235e+2]]
+    
+    #NEEDED FOR GAUSSIAN
+    std: 1
+
+    #NEEDED FOR POLICY
+    use_dist: False
+
+picture:
+    labels: ["root-z", "root-y", "bthigh", "bshin", "bfoot", "fthigh", "fshin","ffoot","vel-rootx", "vel-rootz","vel-rooty", "vel-bthigh", "vel-bshin", "vel-bfoot", "vel-fthigh", "vel-fshin","vel-ffoot", "x-tip coordinate"]
+    class_names: ["back thigh", "back shin", "back foot", "front thigh", "front shin", "front foot"]

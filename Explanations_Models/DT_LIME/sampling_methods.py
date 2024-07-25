@@ -8,9 +8,12 @@ class Gaussian_Sampler():
     def __init__(self, config, runner):
         self.config = config
 
-    def sample(self, mean = 0):
+    def sample(self, num = None):
         
-        num_samples = self.config["sampler"]["num_samples"]
+        if num == None:
+            num_samples = self.config["sampler"]["num_samples"]
+        else:
+            num_samples = num
         if type(mean) == int:
             return torch.normal(mean = mean, std = self.config["sampler"]["std"], size = ( num_samples,self.config["env"]["obs_dim"]))
         else:
@@ -21,8 +24,11 @@ class Gaussian_Sampler():
 class Uniform_Sampler():
     def __init__(self, config, runner):
         self.config = config
-    def sample(self):
-        num_samples = self.config["sampler"]["num_samples"]
+    def sample(self, num = None):
+        if num == None:
+            num_samples = self.config["sampler"]["num_samples"]
+        else:
+            num_samples = num
         bounds = np.transpose(self.config["sampler"]["bounds"])
         bounds = torch.tensor(bounds, dtype = torch.float32)
         lower_bounds = bounds[:, 0]
@@ -36,14 +42,17 @@ class Policy_Sampler():
         self.config = config
         self.runner = runner
 
-    def sample(self):
-        num_samples = self.config["sampler"]["num_samples"]
+    def sample(self, num = None):
+        if num == None:
+            num_samples = self.config["sampler"]["num_samples"]
+        else:
+            num_samples = num
         samples = []
         while num_samples > len(samples):
             path = self.runner(use_dist = self.config["sampler"]["use_dist"])
             samples.extend(path["observation"])
 
         samples_indicies = random.sample(range(len(samples)), num_samples)
-        return torch.tensor(samples)[samples_indicies]
+        return torch.tensor(samples, dtype = torch.float32)[samples_indicies]
 
 
