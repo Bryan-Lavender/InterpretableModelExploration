@@ -8,7 +8,7 @@ class Gaussian_Sampler():
     def __init__(self, config, runner):
         self.config = config
 
-    def sample(self, num = None):
+    def sample(self, num = None, mean = None):
         
         if num == None:
             num_samples = self.config["sampler"]["num_samples"]

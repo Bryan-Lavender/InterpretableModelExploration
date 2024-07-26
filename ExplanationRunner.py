@@ -50,25 +50,37 @@ class MetricGetter():
             TDepth.append(depth)
             TBreadth.append(breadth)
             top_splits.append(config["picture"]["labels"][limemod.surr_model.get_top_split()])
-        return {"PercentCorrect": PercentCorrect, "EpisodeDistance": ExecutionMSE, "Episode_Length_Distance": ExecutionDiff, "Depth": TDepth, "Breadth": TBreadth, "TopSplits": top_splits}
+            path = limemod.surr_model.Save(FilenameEnder="tree_"+str(i)+".pkl")
+        return {"PercentCorrect": PercentCorrect, "EpisodeDistance": ExecutionMSE, "Episode_Length_Distance": ExecutionDiff, "Depth": TDepth, "Breadth": TBreadth, "TopSplits": top_splits, "Path": path}
 
     def sample_rate(self):
         seq = self.config["metric_hyperparameters"]["sample_sequence"]
         returner = {}
         for i in seq:
-            config["sampler"]["num_samples"] = i
+            self.config["sampler"]["num_samples"] = i
             out = self.run_series()
             returner[str(i)] = out
         
         return returner
 
-    def Saver(self, metrics):
+    def Saver(self, metrics, save_img = False):
         path = self.config["exp_output"]["output_path"]
         path = path + "/" + config["surrogate"]["criterion"] + ".json"
         os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, "w") as json_file:
             json.dump(metrics, json_file)
+        if save_img:
+            None
+
     
+    def run_sample_rates(self):
+        returns = self.sample_rate()
+        self.Saver(returns)
+    
+    def run_samples_with_types(self):
+        for i in self.config["metric_hyperparameters"]["citerions"]:
+            self.config["surrogate"]["criterion"] = i
+            self.run_sample_rates()
 
 if __name__ == "__main__":
     args = parser.parse_args()

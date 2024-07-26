@@ -6,6 +6,7 @@ from sklearn.tree import plot_tree
 import matplotlib
 import matplotlib.pyplot as plt
 import os
+import pickle
 class DecisionTree():
     def __init__(self, config, env_runner):
         if config["surrogate"]["classifier"]:
@@ -68,6 +69,26 @@ class DecisionTree():
     def get_top_split(self):
         return self.model.tree_.feature[0]
     
+    def Save(self, FilenameEnder = "tree.pkl"):
+        path = "SavedTrees/"+self.config["sampler"]["sample_type"]+"/"+self.config["surrogate"]["gini"]+"/"+self.config["sampler"]["sample_type"]+"/"+FilenameEnder
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+
+        with open(path, 'w') as filename:
+            pickle.dump(self.model, filename)
+        return path
+    
+    def Load(self, filename, path = None):
+        if path == None:
+            filename = "SavedTrees/"+self.config["sampler"]["sample_type"]+"/"+self.config["surrogate"]["gini"]+"/"+self.config["sampler"]["sample_type"]+"/"+filename
+        else:
+            filename= path + "/" + filename
+        
+        with open(filename, "rb") as model_file:
+            self.model = pickle.load(model_file)
+    
+    
+
+
 
 samplers = {
     "Policy"  : Policy_Sampler,
