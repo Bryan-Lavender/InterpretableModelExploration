@@ -32,6 +32,7 @@ class MetricGetter():
     
     def run_series(self):
         config = self.config
+        Runner = self.Runner
         PercentCorrect = []
         ExecutionMSE = []
         ExecutionDiff = []
@@ -41,9 +42,9 @@ class MetricGetter():
         for i in range(config["metric_hyperparameters"]["tree_execution_samples"]):
             limemod = LIME(config, Runner)
             limemod.train()
-            PercentCorrect.append(limemod.percent_Correct())
+            PercentCorrect.append(float(limemod.percent_Correct()))
             ADmse, CountDiff = limemod.absolute_distance()
-            ExecutionMSE.append(ADmse)
+            ExecutionMSE.append(float(ADmse))
             ExecutionDiff.append(CountDiff)
 
             depth, breadth = limemod.surr_model.depth_breadth()
@@ -65,13 +66,12 @@ class MetricGetter():
 
     def Saver(self, metrics, save_img = False):
         path = self.config["exp_output"]["output_path"]
-        path = path + "/" + config["surrogate"]["criterion"] + ".json"
+        path = path + "/" + self.config["surrogate"]["criterion"] + ".json"
         os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, "w") as json_file:
             json.dump(metrics, json_file)
-        if save_img:
-            None
-
+        return path
+        
     
     def run_sample_rates(self):
         returns = self.sample_rate()
@@ -82,6 +82,8 @@ class MetricGetter():
             self.config["surrogate"]["criterion"] = i
             self.run_sample_rates()
 
+    
+        
 if __name__ == "__main__":
     args = parser.parse_args()
     config_file = open("config_envs/{}.yml".format(args.config_filename))

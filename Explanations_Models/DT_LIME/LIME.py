@@ -70,16 +70,16 @@ class DecisionTree():
         return self.model.tree_.feature[0]
     
     def Save(self, FilenameEnder = "tree.pkl"):
-        path = "SavedTrees/"+self.config["sampler"]["sample_type"]+"/"+self.config["surrogate"]["gini"]+"/"+self.config["sampler"]["sample_type"]+"/"+FilenameEnder
+        path = "SavedTrees/"+self.config["sampler"]["sample_type"]+"/"+self.config["surrogate"]["criterion"]+"/"+str(self.config["sampler"]["num_samples"])+"/"+FilenameEnder
         os.makedirs(os.path.dirname(path), exist_ok=True)
 
-        with open(path, 'w') as filename:
+        with open(path, 'wb') as filename:
             pickle.dump(self.model, filename)
         return path
     
     def Load(self, filename, path = None):
         if path == None:
-            filename = "SavedTrees/"+self.config["sampler"]["sample_type"]+"/"+self.config["surrogate"]["gini"]+"/"+self.config["sampler"]["sample_type"]+"/"+filename
+            filename = "SavedTrees/"+self.config["sampler"]["sample_type"]+"/"+self.config["surrogate"]["criterion"]+"/"+str(self.config["sampler"]["num_samples"])+"/"+filename
         else:
             filename= path + "/" + filename
         
