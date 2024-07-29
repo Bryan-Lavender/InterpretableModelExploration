@@ -142,21 +142,30 @@ class LIME():
             return val
 
     
-    def uniform_correct(self, print_val = True):
+    def uniform_correct(self, print_val = True, num = 10):
         sample_path = "uniform_samples/"+self.config["env"]["env_name"]+"/input_samples.npy"
         out_path = "uniform_samples/"+self.config["env"]["env_name"]+"/output_samples.npy"
         if os.path.exists(sample_path):
             samples = np.load(sample_path)
             output = np.load(out_path)
         else:
+            os.makedirs(os.path.dirname(sample_path), exist_ok=True)
             sampler = Uniform_Sampler(self.config, runner = None)
-            samples = sampler.sample(num = 10000)
-            np.save(sample_path, samples.to("cpu").numpy())
+            samples = sampler.sample(num = num).to(self.device)
+            
             with torch.no_grad():
-                output = self.surr_model.forward(samples).to("cpu").numpy()
+                output = self.deep_model.forward(samples).to("cpu").numpy()
                 np.save(out_path, output)
+            np.save(sample_path, samples.to("cpu").numpy())
         surr_output = self.surr_model.forward(samples)
-        #TODO
+        if self.config["surrogate"]["classifier"]:
+            output = np.argmax(output, axis = 1)
+            matches = surr_output == output
+            num_matches = np.sum(matches)
+            percentage_correct = (num_matches / len(surr_output)) 
+            return percentage_correct
+        else:
+            return np.mean(((surr_output - output)**2).mean(axis=0))
 
         
     

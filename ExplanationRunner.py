@@ -39,10 +39,12 @@ class MetricGetter():
         TDepth = []
         TBreadth = []
         top_splits = []
+        UniformCorrect = []
         for i in range(config["metric_hyperparameters"]["tree_execution_samples"]):
             limemod = LIME(config, Runner)
             limemod.train()
             PercentCorrect.append(float(limemod.percent_Correct()))
+            UniformCorrect.append(float(limemod.uniform_correct()))
             ADmse, CountDiff = limemod.absolute_distance()
             ExecutionMSE.append(float(ADmse))
             ExecutionDiff.append(CountDiff)

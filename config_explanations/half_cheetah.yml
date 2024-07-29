@@ -4,12 +4,12 @@ surrogate:
     min_split: 2 #[2, +inf)
   
 sampler:
-    sample_type: "Policy" #possible: {"Policy", "Uniform", "Gaussian"}
+    sample_type: &sample_type "Policy" #possible: {"Policy", "Uniform", "Gaussian"}
     #NEEDED GENERALLY
     num_samples: 10
 
     #NEEDED FOR UNIFORM
-    bounds: [[-4.8000002e+00, -3.4028235e+2, -4.1887903e-01, -3.4028235e+2], [4.8000002e+00, 3.4028235e+2, 4.1887903e-01, 3.4028235e+2]]
+    bounds: [[-100.,-100.,-100.,-100.,-100.,-100.,-100.,-100.,-100.,-100.,-100.,-100.,-100.,-100.,-100.,-100.,-100.], [100.,100.,100.,100.,100.,100.,100.,100.,100.,100.,100.,100.,100.,100.,100.,100.,100.,]]
     
     #NEEDED FOR GAUSSIAN
     std: 1
@@ -20,3 +20,12 @@ sampler:
 picture:
     labels: ["root-z", "root-y", "bthigh", "bshin", "bfoot", "fthigh", "fshin","ffoot","vel-rootx", "vel-rootz","vel-rooty", "vel-bthigh", "vel-bshin", "vel-bfoot", "vel-fthigh", "vel-fshin","vel-ffoot", "x-tip coordinate"]
     class_names: ["back thigh", "back shin", "back foot", "front thigh", "front shin", "front foot"]
+
+metric_hyperparameters:
+    tree_execution_samples: 5
+    sample_sequence: [3,5,10]
+    citerions: [“squared_error”, “friedman_mse”, “absolute_error”, “poisson”]
+    
+    
+exp_output:
+    output_path: !join ["MetricFiles/", "HalfCheetah-v4/", *sample_type]
