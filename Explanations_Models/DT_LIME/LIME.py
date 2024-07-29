@@ -142,7 +142,7 @@ class LIME():
             return val
 
     
-    def uniform_correct(self, print_val = True, num = 10):
+    def uniform_correct(self, print_val = False, num = 10000):
         sample_path = "uniform_samples/"+self.config["env"]["env_name"]+"/input_samples.npy"
         out_path = "uniform_samples/"+self.config["env"]["env_name"]+"/output_samples.npy"
         if os.path.exists(sample_path):

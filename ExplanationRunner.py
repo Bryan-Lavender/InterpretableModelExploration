@@ -14,6 +14,7 @@ from EnvRunner import GymRunner
 from Explanations_Models.DT_LIME.LIME import LIME
 import json
 import warnings
+from tqdm import tqdm
 
 # Suppress all deprecation warnings
 warnings.filterwarnings('ignore', category=DeprecationWarning)
@@ -23,7 +24,7 @@ yaml.add_constructor("!join", join)
 parser = argparse.ArgumentParser()
 
 parser.add_argument("--config_filename", required=False, type=str)
-parser.add_argument("--task", required=True, type=str)
+#parser.add_argument("--task", required=True, type=str)
 
 class MetricGetter():
     def __init__(self, config, Runner):
@@ -40,7 +41,7 @@ class MetricGetter():
         TBreadth = []
         top_splits = []
         UniformCorrect = []
-        for i in range(config["metric_hyperparameters"]["tree_execution_samples"]):
+        for i in tqdm(range(config["metric_hyperparameters"]["tree_execution_samples"])):
             limemod = LIME(config, Runner)
             limemod.train()
             PercentCorrect.append(float(limemod.percent_Correct()))
@@ -61,6 +62,7 @@ class MetricGetter():
         returner = {}
         for i in seq:
             self.config["sampler"]["num_samples"] = i
+            print("sample_num:", i)
             out = self.run_series()
             returner[str(i)] = out
         
@@ -82,7 +84,9 @@ class MetricGetter():
     def run_samples_with_types(self):
         for i in self.config["metric_hyperparameters"]["citerions"]:
             self.config["surrogate"]["criterion"] = i
+            print("running", i)
             self.run_sample_rates()
+            print("saved", i)
 
     
         
@@ -90,7 +94,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
     config_file = open("config_envs/{}.yml".format(args.config_filename))
     config = yaml.load(config_file, Loader=yaml.FullLoader)
-    config.update(yaml.load(open("config_explanations/{}.yml".format(args.config_filename)), Loader= yaml.FullLoader))
+    config.update(yaml.load(open("config_explanations/{}.yml".format(args.config_filename), encoding="utf8"), Loader= yaml.FullLoader))
     Runner = GymRunner(config)
     Runner.load_weights(PATH = None)
+    MG = MetricGetter(config, Runner)
+    MG.run_samples_with_types()
 
