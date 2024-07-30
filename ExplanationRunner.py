@@ -45,7 +45,7 @@ class MetricGetter():
             limemod = LIME(config, Runner)
             limemod.train()
             PercentCorrect.append(float(limemod.percent_Correct()))
-            UniformCorrect.append(float(limemod.uniform_correct()))
+            UniformCorrect.append(float(limemod.uniform_Correct()))
             ADmse, CountDiff = limemod.absolute_distance()
             ExecutionMSE.append(float(ADmse))
             ExecutionDiff.append(CountDiff)
@@ -55,7 +55,7 @@ class MetricGetter():
             TBreadth.append(breadth)
             top_splits.append(config["picture"]["labels"][limemod.surr_model.get_top_split()])
             path = limemod.surr_model.Save(FilenameEnder="tree_"+str(i)+".pkl")
-        return {"PercentCorrect": PercentCorrect, "EpisodeDistance": ExecutionMSE, "Episode_Length_Distance": ExecutionDiff, "Depth": TDepth, "Breadth": TBreadth, "TopSplits": top_splits, "Path": path}
+        return {"PercentCorrect": PercentCorrect, "UniformCorrect": UniformCorrect,"EpisodeDistance": ExecutionMSE, "Episode_Length_Distance": ExecutionDiff, "Depth": TDepth, "Breadth": TBreadth, "TopSplits": top_splits, "Path": path}
 
     def sample_rate(self):
         seq = self.config["metric_hyperparameters"]["sample_sequence"]
