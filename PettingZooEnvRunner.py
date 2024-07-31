@@ -13,9 +13,7 @@ import matplotlib.pyplot as plt
 import unittest
 from DeepLearning_Models.utils.general import join, plot_combined
 from DeepLearning_Models.ActorCritic.policy_gradient import PolicyGradient
-
-# test
-from wrappers import custom_video_wrapper
+from wrappers import petting_zoo_video_wrapper
 
 import random
 import yaml
@@ -82,7 +80,7 @@ class PettingZooRunner:
                 states.append(state)
 
                 if (action is None):
-                    actions.append(np.array([0,0,0,0]))
+                    actions.append(np.array([0, 0, 0, 0]))
                 
                 else:
                     actions.append(action)
@@ -109,7 +107,7 @@ class PettingZooRunner:
 
         env.reset(seed=self.config["env"]["seed"])
 
-        env = custom_video_wrapper.RecordVideo(
+        env = petting_zoo_video_wrapper.RecordVideo(
             env,
             self.config["output"]["record_path"].format(self.config["env"]["seed"]) + "_" + str(self.video_tag),
             step_trigger=lambda x: x == 0,
@@ -118,5 +116,3 @@ class PettingZooRunner:
         self.video_tag += 1
         self.runner(env = env)
         env.close()
-
-            
