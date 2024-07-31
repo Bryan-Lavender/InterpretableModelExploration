@@ -71,6 +71,9 @@ class GymRunner:
                 return self.model.network(state).cpu().numpy()
 
     def runner(self, env = None, use_dist = True, model = None, seed = None):
+        weird_box2d_state = False
+        if "Lunar" in  self.config["env"]["env_name"]:
+            weird_box2d_state = True
         states = []
         actions = []
         rewards = []
@@ -85,16 +88,24 @@ class GymRunner:
             act = self.actNoDist
         elif model!= None:
             act = model.forward
-
-        if seed!= None:
-            state, info = env.reset(seed=seed)
+        if weird_box2d_state:
+            if seed!= None:
+                state = env.reset()
+            else:
+                state = env.reset()
         else:
-            state, info = env.reset()
+            if seed!= None:
+                state, info = env.reset(seed=seed)
+            else:
+                state, info = env.reset()
         for i in range(self.config["hyper_params"]["max_ep_len"]):
             action = act(state)
             states.append(state)
             actions.append(action)
-            state, reward, terminated, truncated, info = env.step(action)
+            if weird_box2d_state:
+                state, reward, terminated, truncated = env.step(action)
+            else:
+                state, reward, terminated, truncated, info = env.step(action)
             rewards.append(reward)
 
             if terminated:

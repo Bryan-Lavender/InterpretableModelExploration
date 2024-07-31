@@ -70,7 +70,7 @@ class DecisionTree():
         return self.model.tree_.feature[0]
     
     def Save(self, FilenameEnder = "tree.pkl"):
-        path = "SavedTrees/"+self.config["sampler"]["sample_type"]+"/"+self.config["surrogate"]["criterion"]+"/"+str(self.config["sampler"]["num_samples"])+"/"+FilenameEnder
+        path = "SavedTrees/"+self.config["env"]["env_name"]+"/"+self.config["sampler"]["sample_type"]+"/"+self.config["surrogate"]["criterion"]+"/"+str(self.config["sampler"]["num_samples"])+"/"+FilenameEnder
         os.makedirs(os.path.dirname(path), exist_ok=True)
 
         with open(path, 'wb') as filename:
