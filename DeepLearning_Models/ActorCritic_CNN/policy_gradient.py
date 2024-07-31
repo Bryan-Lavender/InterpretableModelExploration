@@ -306,7 +306,9 @@ class PolicyGradientCNN(object):
             paths, total_rewards = self.sample_path()
             all_total_rewards.extend(total_rewards)
             observations = np.concatenate([path["observation"] for path in paths])
+            print(len(paths),len(observations))
             actions = np.concatenate([path["action"] for path in paths])
+            print(np.unique(actions))
             rewards = np.concatenate([path["reward"] for path in paths])
             # compute Q-val estimates (discounted future returns) for each time step
             returns = self.get_returns(paths)
@@ -327,14 +329,16 @@ class PolicyGradientCNN(object):
                         if begin_ent < 0:
                             begin_ent = 0
                         breaker = True
-                    advantages = self.calculate_advantage(returns[begin_ent:end_ent], observations[begin_ent:end_ent])
-                    if self.config["model_training"]["use_baseline"]:
-                        self.baseline_network.update_baseline(returns[begin_ent:end_ent], observations[begin_ent:end_ent])
-                    self.update_policy(observations[begin_ent:end_ent], actions[begin_ent:end_ent], advantages)
-                    begin_ent=end_ent
+                    if end_ent - begin_ent > 1:
+                        advantages = self.calculate_advantage(returns[begin_ent:end_ent], observations[begin_ent:end_ent])
+                        if self.config["model_training"]["use_baseline"]:
+                            self.baseline_network.update_baseline(returns[begin_ent:end_ent], observations[begin_ent:end_ent])
+                        self.update_policy(observations[begin_ent:end_ent], actions[begin_ent:end_ent], advantages)
+                        begin_ent=end_ent
                     if breaker:
                         break
                     torch.cuda.empty_cache()
+            
             else:
                 # advantage will depend on the baseline implementation
                 advantages = self.calculate_advantage(returns, observations)

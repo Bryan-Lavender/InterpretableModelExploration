@@ -59,7 +59,7 @@ class BaselineNetwork(nn.Module):
 
         output = self.network(observations)
         output = output.squeeze()
-  
+        
         assert output.ndim == 1
         return output
 
