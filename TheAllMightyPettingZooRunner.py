@@ -13,7 +13,7 @@ import unittest
 from DeepLearning_Models.utils.general import join, plot_combined
 from DeepLearning_Models.ActorCritic.policy_gradient import PolicyGradient
 from DeepLearning_Models.ActorCritic_CNN.policy_gradient import PolicyGradientCNN
-from petting_zoo_runner import PettingZooRunner
+from PettingZooEnvRunner import PettingZooRunner
 import random
 import yaml
 yaml.add_constructor("!join", join)

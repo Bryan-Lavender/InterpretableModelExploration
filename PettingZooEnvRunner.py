@@ -6,7 +6,6 @@ import torch
 import gym
 import matplotlib
 import importlib
-import supersuit
 
 matplotlib.use("agg")
 import matplotlib.pyplot as plt
