@@ -72,7 +72,7 @@ class GymRunner:
 
     def runner(self, env = None, use_dist = True, model = None, seed = None):
         weird_box2d_state = False
-        if "Lunar" in  self.config["env"]["env_name"]:
+        if "Lunar" in  self.config["env"]["env_name"] or "Acrobot" in self.config["env"]["env_name"]:
             weird_box2d_state = True
         states = []
         actions = []
