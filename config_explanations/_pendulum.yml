@@ -1,7 +1,9 @@
 surrogate:
     classifier: False
-    criterion: "squared_error" # possible: {“gini”, “entropy”, “log_loss”} for classifier, {“squared_error”, “friedman_mse”, “absolute_error”, “poisson”}
+    criterion: "MSE" # possible: {“gini”, “entropy”, “log_loss”} for classifier, {“squared_error”, “friedman_mse”, “absolute_error”, “poisson”}
     min_split: 2 #[2, +inf)
+    tree_cutoff: 1.
+    bucket_alg: "half_split"
   
 sampler:
     sample_type: "Policy" #possible: {"Policy", "Uniform", "Gaussian"}
