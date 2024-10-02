@@ -3,10 +3,14 @@ surrogate:
     criterion: "entropy" # possible: {“gini”, “entropy”, “log_loss”} for classifier, {“squared_error”, “friedman_mse”, “absolute_error”, “poisson”}
     min_split: 2 #[2, +inf)
     bucket_alg: "half_split"
+    use_FI: True
+    
+FI:
+    method: "LRP"
 sampler:
     sample_type: &sample_type "Policy" #possible: {"Policy", "Uniform", "Gaussian"}
     #NEEDED GENERALLY
-    num_samples: 60
+    num_samples: 10
 
     #NEEDED FOR UNIFORM
     bounds: [[-4.8000002e+00, -3.4028235e+2, -4.1887903e-01, -3.4028235e+2], [4.8000002e+00, 3.4028235e+2, 4.1887903e-01, 3.4028235e+2]]

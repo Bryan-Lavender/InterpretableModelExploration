@@ -5,8 +5,8 @@ import numpy as np
 import json
 from .sampling_methods import Policy_Sampler, Uniform_Sampler, Gaussian_Sampler
 class SurrogateModel():
-    def __init__(self, config):
-        self.model = DecisionTree(config)
+    def __init__(self, config, FI_calc = None):
+        self.model = DecisionTree(config, FI=FI_calc)
         self.config = config
     
     def fit(self,X,Y):
@@ -65,11 +65,12 @@ samplers = {
 }
 
 class LIME():
-    def __init__(self, config, env_runner):
+    def __init__(self, config, env_runner, FI_getta = None):
         self.config = config
         self.comparitor = env_runner.comparitor
         self.env_runner = env_runner.runner
-        self.surr_model = SurrogateModel(self.config)
+        self.surr_model = SurrogateModel(self.config, FI_getta)
+        self.FI_getta = FI_getta
         if config["sampler"]["use_dist"]:
             self.deep_model = env_runner.model.policy
         else:
@@ -77,19 +78,33 @@ class LIME():
         self.device = env_runner.model.device
         self.sampler = samplers[config["sampler"]["sample_type"]](config, self.env_runner)
         
-    
+    def sample_set(self):
+        with torch.no_grad():
+            samples = self.sampler.sample().to(self.device)
+            if self.config["surrogate"]["classifier"]:
+                Y = torch.argmax(self.deep_model.forward(samples), dim = 1).to("cpu").numpy()
+                
+            else:
+                Y = self.deep_model.forward(samples).to("cpu").numpy()
+                
+            samples = samples.to("cpu").numpy()
+            X = samples
+        return X, Y
     def train(self, returner = False):
         with torch.no_grad():
             samples = self.sampler.sample().to(self.device)
             if self.config["surrogate"]["classifier"]:
                 Y = torch.argmax(self.deep_model.forward(samples), dim = 1).to("cpu").numpy()
-                arr = [len(Y[Y==i]) for i in range(self.config["env"]["action_dim"])]
+                
             else:
                 Y = self.deep_model.forward(samples).to("cpu").numpy()
-                arr = []
+                
             samples = samples.to("cpu").numpy()
             X = samples
-            self.surr_model.fit(X,Y)
+            if self.config["surrogate"]["use_FI"] and self.FI_getta != None:
+                self.surr_model.fit(X,Y)
+            else:
+                self.surr_model.fit(X,Y)
         if returner:
             return X,Y
     #can only test action and state metrics
@@ -110,6 +125,7 @@ class LIME():
         #         TP += np.sum((y_true == i) & (y_pred == i))
         #     total = len(y_true)
         #     percent_correct = TP/total
+            
             if(print_val):
                 print(f"Percent Correct: {percent_correct:.2f}%")
             return percent_correct

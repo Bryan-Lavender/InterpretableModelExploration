@@ -2,9 +2,10 @@ import numpy as np
 from .BucketAlgs import half_split
 from .SplittingFunctions import entropy, MSE, MAE
 from scipy.spatial.distance import pdist
+from .FI_Calulator import Policy_Smoothing_Max_Weighting, Policy_Smoothing_MaxAvg_Weighting, Policy_Smoothing_Var_Weighting, Classification_Forgiveness
 bucketing_mech = {"half_split": half_split}
 splitting_functions = {"entropy": entropy, "MSE": MSE, "MAE": MAE}
-
+FICalcs = {"Var_Weighted": Policy_Smoothing_Var_Weighting, "Max_all": Policy_Smoothing_Max_Weighting, "max_avg":Policy_Smoothing_MaxAvg_Weighting, "class": Classification_Forgiveness}
 class Single_Attribute_Node():
     #begin Single_Attribute_Node: X (input), Y (output), feature_list ([disc, cont, disc, disc, cont...])
     """
@@ -13,18 +14,21 @@ class Single_Attribute_Node():
         is_leaf: leaf node to return
         vals: values of bound on feature OR values to return
     """
-    def __init__(self, config):
+    def __init__(self, config, parent_node = None):
         self.feature_index = None
         self.is_leaf = False
         self.val_bucket = None
         self.return_value = None
         self.config = config
+        self.parent_node = parent_node
     
-    def fit(self, X,Y, depth=None):
+    def fit(self, X,Y, depth=None, FI = None, out_logits = None):
+        
         if depth != None:
             self.depth = depth + 1
         
         if self.config["surrogate"]["classifier"] and len(Y[Y.keys()[0]].unique()) == 1:
+            print(len(Y))
             self.return_value = Y[Y.keys()[0]].value_counts().index[0]
             self.is_leaf = True
 
@@ -36,6 +40,7 @@ class Single_Attribute_Node():
             if len(Y) == 1:
                 self.return_value = Y.to_numpy()[0]
             else:
+                print(len(Y))
                 self.return_value = np.mean(Y.to_numpy(), axis=0)
                 
 
@@ -47,16 +52,22 @@ class Single_Attribute_Node():
         else:
             buckets = self.bucket(X)
             
-            min_var, min_bucket, min_val,indicies_left, indicies_right = self.split(X,Y, buckets)
+            min_var, min_bucket, min_val,indicies_left, indicies_right = self.split(X,Y, buckets, FI=FI, out_logits=out_logits)
             self.feature_index = min_var
             self.val_bucket = min_bucket
             self.heuristic_value = min_val
             
      
-            self.left_node = Single_Attribute_Node( self.config)
-            self.right_node = Single_Attribute_Node( self.config)
-            left_dict, left_max = self.left_node.fit(X.loc[indicies_left], Y.loc[indicies_left], self.depth)
-            right_dict, right_max = self.right_node.fit(X.loc[indicies_right], Y.loc[indicies_right],self.depth)
+            self.left_node = Single_Attribute_Node( self.config, parent_node=self)
+            self.right_node = Single_Attribute_Node( self.config, parent_node=self)
+           
+            if self.config["surrogate"]["use_FI"] and type(FI) != type(None):
+                left_dict, left_max = self.left_node.fit(X.loc[indicies_left], Y.loc[indicies_left], self.depth, FI=FI.loc[indicies_left], out_logits=out_logits.loc[indicies_left])
+                right_dict, right_max = self.right_node.fit(X.loc[indicies_right], Y.loc[indicies_right],self.depth, FI=FI.loc[indicies_right], out_logits=out_logits.loc[indicies_right])
+            else:
+                left_dict, left_max = self.left_node.fit(X.loc[indicies_left], Y.loc[indicies_left], self.depth)
+                right_dict, right_max = self.right_node.fit(X.loc[indicies_right], Y.loc[indicies_right],self.depth)
+         
             return {"Feature": self.feature_index, "Bucket": self.val_bucket, "Left_Child": left_dict, "Right_Child": right_dict}, max(left_max, right_max)
     
     def bucket(self, X, feature_types = None):
@@ -76,14 +87,16 @@ class Single_Attribute_Node():
      
         return buckets
     
-    def split(self, X, Y, buckets):
+    def split(self, X, Y, buckets, FI = None, out_logits = None):
         #heuristics = {}
         min_var = None
         min_bucket = None
         min_val = None
         
-        
+        if self.config["surrogate"]["use_FI"] and type(FI) != type(None):
+            FI_val = FICalcs["Var_Weighted"](FI, out_logits)
         for var in buckets.keys():
+                
             #heuristics[var] = []
             #if len(buckets[var]) != 1:
                 for bucket in buckets[var]:
@@ -92,7 +105,7 @@ class Single_Attribute_Node():
                     if type(bucket) == np.float64 or type(bucket) == np.float32 or type(bucket) == float:
                         indicies_left = X[X[var] <= bucket].index
                     else:
-                        indicies_left = X[X[var] == bucket].index
+                        indicies_left = X[X[var] == bucket].inde
                     
                     indicies_right = X.index.difference(indicies_left)
 
@@ -112,6 +125,10 @@ class Single_Attribute_Node():
                     val = len(Y_left)/len(Y)*heuristic_left + len(Y_right)/len(Y)*heuristic_right
                     #heuristics[var].append(val)
                     
+                    if self.config["surrogate"]["use_FI"] and type(FI) != type(None):
+                        # FI_val = FICalcs["Var"](FI, out_logits)
+                        val = val * (1/FI_val[var].iloc[0])
+                        
                     if min_val == None or min_val > val:
                         min_val = val
                         min_var = var
@@ -149,7 +166,11 @@ class Single_Attribute_Node():
     def self_print(self):
         obj_to_Print = {"Feature": self.feature_index, "Value": self.val_bucket}
         print(obj_to_Print)
-        
+    
+    def get_parent(self):
+        return self.parent_node
+    
+
 
 
 

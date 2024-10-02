@@ -4,7 +4,9 @@ surrogate:
     min_split: 2 #[2, +inf)
     tree_cutoff: 1.
     bucket_alg: "half_split"
-  
+    use_FI: True
+FI:
+    method: "LRP"  
 sampler:
     sample_type: &sample_type "Policy" #possible: {"Policy", "Uniform", "Gaussian"}
     #NEEDED GENERALLY
