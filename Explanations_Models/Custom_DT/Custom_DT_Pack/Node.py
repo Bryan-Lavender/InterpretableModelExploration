@@ -5,7 +5,7 @@ from scipy.spatial.distance import pdist
 from .FI_Calulator import Policy_Smoothing_Max_Weighting, Policy_Smoothing_MaxAvg_Weighting, Policy_Smoothing_Var_Weighting, Classification_Forgiveness
 bucketing_mech = {"half_split": half_split}
 splitting_functions = {"entropy": entropy, "MSE": MSE, "MAE": MAE}
-FICalcs = {"Var_Weighted": Policy_Smoothing_Var_Weighting, "Max_all": Policy_Smoothing_Max_Weighting, "max_avg":Policy_Smoothing_MaxAvg_Weighting, "class": Classification_Forgiveness}
+FICalcs = {"Var_weighted": Policy_Smoothing_Var_Weighting, "Max_all": Policy_Smoothing_Max_Weighting, "Max_avg":Policy_Smoothing_MaxAvg_Weighting, "class": Classification_Forgiveness}
 class Single_Attribute_Node():
     #begin Single_Attribute_Node: X (input), Y (output), feature_list ([disc, cont, disc, disc, cont...])
     """
@@ -21,6 +21,7 @@ class Single_Attribute_Node():
         self.return_value = None
         self.config = config
         self.parent_node = parent_node
+        self.represented_nodes = None
     
     def fit(self, X,Y, depth=None, FI = None, out_logits = None):
         
@@ -28,7 +29,7 @@ class Single_Attribute_Node():
             self.depth = depth + 1
         
         if self.config["surrogate"]["classifier"] and len(Y[Y.keys()[0]].unique()) == 1:
-            print(len(Y))
+            self.represented_nodes = len(Y)
             self.return_value = Y[Y.keys()[0]].value_counts().index[0]
             self.is_leaf = True
 
@@ -39,8 +40,9 @@ class Single_Attribute_Node():
         elif not self.config["surrogate"]["classifier"] and (len(Y)==1 or max(pdist(Y.values, metric="euclidean")) <= self.config["surrogate"]["tree_cutoff"] ):
             if len(Y) == 1:
                 self.return_value = Y.to_numpy()[0]
+                self.represented_nodes = len(Y)
             else:
-                print(len(Y))
+                self.represented_nodes = len(Y)
                 self.return_value = np.mean(Y.to_numpy(), axis=0)
                 
 
@@ -94,7 +96,7 @@ class Single_Attribute_Node():
         min_val = None
         
         if self.config["surrogate"]["use_FI"] and type(FI) != type(None):
-            FI_val = FICalcs["Var_Weighted"](FI, out_logits)
+            FI_val = FICalcs[self.config["FI"]["grouping"]](FI, out_logits)
         for var in buckets.keys():
                 
             #heuristics[var] = []

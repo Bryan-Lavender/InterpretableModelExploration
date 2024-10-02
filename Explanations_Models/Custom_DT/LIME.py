@@ -58,6 +58,9 @@ class SurrogateModel():
         with open(path, "w") as filename:
             json.dump(self.model.dictionary_rep, path, indent=4)
     
+    def tree_traversal(self):
+        print(self.model.get_dict_representation())
+    
 samplers = {
     "Policy"  : Policy_Sampler,
     "Uniform" : Uniform_Sampler,
@@ -163,4 +166,12 @@ class LIME():
     
     def absolute_distance(self, print_val= True):
         return self.comparitor(use_dist=self.config["sampler"]["use_dist"], model2 = self.surr_model)
+    
+    def get_metrics(self):
+        mets = self.surr_model.model.get_metrics()
+        global_mets = {"Policy_Captured": self.percent_Correct(), "Uniform_Captured": self.uniform_Correct()}
+        global_mets.update(mets)
+        return global_mets
+
+
     

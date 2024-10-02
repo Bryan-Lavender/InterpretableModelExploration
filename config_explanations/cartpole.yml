@@ -7,6 +7,7 @@ surrogate:
     
 FI:
     method: "LRP"
+    grouping: "Max_all" # possible: {"Var_Weighted, Max_all, Max_avg"} if classifier {"class"}
 sampler:
     sample_type: &sample_type "Policy" #possible: {"Policy", "Uniform", "Gaussian"}
     #NEEDED GENERALLY

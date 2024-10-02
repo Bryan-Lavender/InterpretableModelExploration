@@ -29,6 +29,8 @@ class DecisionTree():
         else:    
             self.dictionary_rep, self.max_depth = self.root.fit(X,Y,0)
 
+        self.nodeList = self.node_list()
+
     def _forward(self, val):
         return self.root._forward(val)
     
@@ -46,3 +48,42 @@ class DecisionTree():
         print("root")
         print(self.root.printer())
     
+    def TraverseTree(self,node:Single_Attribute_Node):
+        if node.is_leaf:
+            return [node]
+        else:
+            re = []
+            left = self.TraverseTree(node.left_node)
+            right = self.TraverseTree(node.right_node)
+            for i in left:
+                re.append(i)
+            for i in right:
+                re.append(i)
+            return re
+    
+    def node_list(self):
+        return self.TraverseTree(self.root)
+    
+    def get_node_list(self):
+        return self.nodeList
+    
+    def get_depth(self):
+        return self.max_depth
+    
+    def get_breadth(self):
+        breadths = [0 for i in range(self.max_depth + 1)]
+        for node in self.nodeList:
+            breadths[node.depth] += 1
+        return max(breadths)
+
+    def get_avg_representation(self):
+        Running_Avg = 0
+        for node in self.nodeList:
+            Running_Avg += node.represented_nodes
+        return Running_Avg/len(self.nodeList)
+    
+    def get_metrics(self):
+        return {"Representation": self.get_avg_representation(), "Depth": self.get_depth(), "Breadth": self.get_breadth()}
+    
+    
+        
