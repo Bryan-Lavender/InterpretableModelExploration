@@ -112,29 +112,32 @@ class LIME():
             return X,Y
     #can only test action and state metrics
     def percent_Correct(self, print_val = False):
-        path = self.env_runner(use_dist = self.config["sampler"]["use_dist"])
-        y_pred = self.surr_model.forward(path["observation"])
-    
-        y_true = path["action"]
+        PCs = []
+        for i in range(0, 30):
+            path = self.env_runner(use_dist = self.config["sampler"]["use_dist"])
+            y_pred = self.surr_model.forward(path["observation"])
         
-        TP = 0
-        true_positive = sum(yp == yt for yp, yt in zip(y_pred, y_true))
-        percent_correct = true_positive/len(y_true)
-        if self.config["surrogate"]["classifier"]:
-        #     for i in list(range(self.config["env"]["action_dim"])):
-        #         print(i)
-        #         print((y_true == i) & (y_pred == i))
-                
-        #         TP += np.sum((y_true == i) & (y_pred == i))
-        #     total = len(y_true)
-        #     percent_correct = TP/total
+            y_true = path["action"]
             
-            if(print_val):
-                print(f"Percent Correct: {percent_correct:.2f}%")
-            return percent_correct
-        else:
-            val = np.mean((y_pred - y_true)**2)
-            return val
+            TP = 0
+            true_positive = sum(yp == yt for yp, yt in zip(y_pred, y_true))
+            percent_correct = true_positive/len(y_true)
+            if self.config["surrogate"]["classifier"]:
+            #     for i in list(range(self.config["env"]["action_dim"])):
+            #         print(i)
+            #         print((y_true == i) & (y_pred == i))
+                    
+            #         TP += np.sum((y_true == i) & (y_pred == i))
+            #     total = len(y_true)
+            #     percent_correct = TP/total
+                
+                if(print_val):
+                    print(f"Percent Correct: {percent_correct:.2f}%")
+                PCs.append(percent_correct)
+            else:
+                val = np.mean((y_pred - y_true)**2)
+                PCs.append(val)
+        return np.mean(PCs)
 
     
     def uniform_Correct(self, print_val = False, num = 10000):

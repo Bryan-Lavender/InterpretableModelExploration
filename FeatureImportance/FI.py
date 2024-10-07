@@ -26,6 +26,9 @@ class FeatureImportance():
         for i in X:
             out_t, tmpFI = self.Calc_Relevence_Importance(i)
             out.append(out_t)
+            tmpFI = np.abs(tmpFI)
+            for j in range(tmpFI.shape[0]):
+                tmpFI[j,:]= (tmpFI[j,:] - np.min(tmpFI[j,:])) / (np.max(tmpFI[j,:]) - np.min(tmpFI[j,:]))
             FI.append(tmpFI)
         FI = np.stack(FI)
         out = np.stack(out)
