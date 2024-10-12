@@ -32,19 +32,27 @@ class DecisionTree():
             out = pd.DataFrame(out, columns=self.config["picture"]["class_names"])
             #self.dictionary_rep, self.max_depth = self.root.fit(X,Y,0, FI = FI, out_logits = out)
             self.roots = {}
+            self.max_depths = {}
+            self.dictionary_reps = {}
             for i in Y_set:
                 self.roots[i.columns[0]] = Single_Attribute_Node(self.config)
-                self.roots[i.columns[0]].fit(X,i,0,FI=FI[i.columns[0]], out_logits=out[i.columns[0]])
-            
+                tmp_dict, tmp_max = self.roots[i.columns[0]].fit(X,i,0,FI=FI[i.columns[0]], out_logits=out[i.columns[0]])
+                self.dictionary_reps[i.columns[0]] = tmp_dict 
+                self.max_depths[i.columns[0]] = tmp_max
             
         else:    
             #self.dictionary_rep, self.max_depth = self.root.fit(X,Y,0)
             
             self.roots = {}
+            self.max_depths = {}
+            self.dictionary_reps = {}
             for i in Y_set:
                 
                 self.roots[i.columns[0]] = Single_Attribute_Node(self.config)
-                self.roots[i.columns[0]].fit(X,i,0)
+                tmp_dict, tmp_max = self.roots[i.columns[0]].fit(X,i,0)
+                self.dictionary_reps[i.columns[0]] = tmp_dict 
+                self.max_depths[i.columns[0]] = tmp_max
+        self.nodeList = self.node_list()
 
     def fit_single(self, X,Y):
         X = pd.DataFrame(X, columns=self.config["picture"]["labels"])
@@ -108,22 +116,60 @@ class DecisionTree():
             return re
     
     def node_list(self):
+        if self.config["surrogate"]["multi_tree"]:
+            nodes = {}
+            for i in self.config["picture"]["class_names"]:
+                nodes[i] = self.TraverseTree(self.roots[i])
+            return nodes
         return self.TraverseTree(self.root)
     
     def get_node_list(self):
         return self.nodeList
     
     def get_depth(self):
+        if self.config["surrogate"]["multi_tree"]:
+            return self.max_depths
         return self.max_depth
     
     def get_breadth(self):
+        if self.config["surrogate"]["multi_tree"]:
+            breadths = {}
+            for i in self.config["picture"]["class_names"]:
+                
+                breadths[i] = self.get_breadth_multi(i)
+            return breadths
+        else:
+            return self.get_breadth_single()
+    def get_breadth_single(self):
         breadths = [0 for i in range(self.max_depth + 1)]
         for node in self.nodeList:
             breadths[node.depth] += 1
         return max(breadths)
-
+    
+    def get_breadth_multi(self,clas):
+   
+        breadths = [0 for i in range(self.max_depths[clas] + 1)]
+        for node in self.nodeList[clas]:
+            breadths[node.depth] += 1
+        return max(breadths)
+    
     def get_avg_representation(self):
+        if self.config["surrogate"]["multi_tree"]:
+            reps = {}
+            for i in self.config["picture"]["class_names"]:
+                reps[i] = self.get_avg_represenetation_multi(i)
+            return reps
+        else:
+            return self.get_avg_representation_single()
+    def get_avg_represenetation_multi(self, clas):
         Running_Avg = 0
+        for node in self.nodeList[clas]:
+
+            Running_Avg += node.represented_nodes
+        return Running_Avg/len(self.nodeList[clas])
+    def get_avg_representation_single(self):
+        Running_Avg = 0
+        
         for node in self.nodeList:
             Running_Avg += node.represented_nodes
         return Running_Avg/len(self.nodeList)

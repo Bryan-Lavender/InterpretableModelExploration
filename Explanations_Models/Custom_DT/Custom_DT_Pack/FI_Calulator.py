@@ -23,6 +23,7 @@ def Policy_Smoothing_Var_Weighting(FI, out_logits):
     return tmp
 
 def Policy_Smoothing_Max_Weighting(FI, out_logits):
+
     tmp = []
     for i in list(out_logits.keys()):
         tmp.append(FI[i].mean().to_numpy())
@@ -31,6 +32,7 @@ def Policy_Smoothing_Max_Weighting(FI, out_logits):
     return tmp
 
 def Classification_Forgiveness(FI, out_logits):
+
     rows = FI.shape[0] 
     high_labels = FI.columns.get_level_values(0).unique()  
     sub_labels = FI.columns.get_level_values(1).unique() 
@@ -42,6 +44,7 @@ def Classification_Forgiveness(FI, out_logits):
     return pd.DataFrame(np.expand_dims(tmp, axis=0), columns = list(FI[out_logits.keys()[0]].keys()))
 
 def Policy_Smoothing_MaxAvg_Weighting(FI, out_logits):
+
     tmp = []
     for i in list(out_logits.keys()):
         tmp.append(FI[i].mean().to_numpy())

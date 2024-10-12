@@ -1,5 +1,6 @@
 import numpy as np
 def half_split(x):
+  
     sorted_x = np.sort(x)
     buckets = []
     for i in range(1,len(x)):

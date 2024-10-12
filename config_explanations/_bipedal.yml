@@ -7,8 +7,10 @@ surrogate:
     use_FI: True
     multi_tree: False
 FI:
-    method: "LRP"
+    method: "FD"
     pooling: "Var"
+    try: 1
+
 sampler:
     sample_type: &sample_type "Policy" #possible: {"Policy", "Uniform", "Gaussian"}
     #NEEDED GENERALLY

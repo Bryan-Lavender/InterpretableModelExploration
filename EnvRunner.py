@@ -64,6 +64,8 @@ class GymRunner:
     def actNoDist(self,state):
         with torch.no_grad():
             if self.config["env"]["discrete"]:
+                # if self.config["env"]["env_name"] == "LunarLander-v2":
+                #     state = state[0]
                 state = torch.tensor(state, dtype = torch.float32).to(self.model.device)
                 return torch.argmax(self.model.network(state)).cpu().numpy()
             else:
@@ -72,7 +74,7 @@ class GymRunner:
 
     def runner(self, env = None, use_dist = True, model = None, seed = None):
         weird_box2d_state = False
-        if "Lunar" in  self.config["env"]["env_name"] or "Acrobot" in self.config["env"]["env_name"]:
+        if "Acrobot" in self.config["env"]["env_name"]:
             weird_box2d_state = True
         states = []
         actions = []

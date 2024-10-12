@@ -14,7 +14,7 @@ model_training:
     summary_freq: 1
     use_baseline: &use_baseline True
     normalize_advantage: False
-    device: "gpu" # cpu/gpu
+    device: "cpu" # cpu/gpu
     compile: False
     compile_mode: "default"
 

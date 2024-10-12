@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from .BucketAlgs import half_split
 from .SplittingFunctions import entropy, MSE, MAE
 from scipy.spatial.distance import pdist
@@ -28,10 +29,32 @@ class Single_Attribute_Node():
         self.FI_calculator = FICalcs
         #if self.config["surrogate"]["multi_tree"]:
             #self.FI_calculator = Single_Y_FICalcs
+        
+    def should_create_leaf(self, y_values, threshold_factor=2):
+        # Calculate the mean of the values
+        mean_value = np.mean(y_values)
+        
+        # Calculate the Euclidean distances from the mean
+        distances = np.linalg.norm(y_values - mean_value, axis=1)
+        
+        # Calculate the standard deviation of the distances
+        std_dev = np.std(distances)
+        
+        # Set the threshold based on standard deviation and vector size
+        threshold = threshold_factor * std_dev * np.sqrt(len(y_values[0]))
+        
+        # Check if all distances are below the threshold
+        if np.all(distances < threshold):
+            return True  # Create a leaf node
+        else:
+            return False  # Continue splitting
+        
     def fit(self, X,Y, depth=None, FI = None, out_logits = None):
         
         if depth != None:
             self.depth = depth + 1
+        else:
+            self.depth = 1
         
         if self.config["surrogate"]["classifier"] and len(Y[Y.keys()[0]].unique()) == 1:
             self.represented_nodes = len(Y)
@@ -43,8 +66,10 @@ class Single_Attribute_Node():
             return {"Value": self.return_value},self.depth
         
         #elif not self.config["surrogate"]["classifier"] and (len(Y)==1 or max(pdist(Y.values, metric="euclidean")) <= self.config["surrogate"]["tree_cutoff"] ):
-        elif not self.config["surrogate"]["classifier"] and len(Y)==1:# or max(pdist(Y.values, metric="euclidean")) <= self.config["surrogate"]["tree_cutoff"] ):
-
+        #elif not self.config["surrogate"]["classifier"] and len(Y)==1:# or max(pdist(Y.values, metric="euclidean")) <= self.config["surrogate"]["tree_cutoff"] ):
+        #elif not self.config["surrogate"]["classifier"] and (len(Y)==1 or self.depth >= 5):
+        #elif not self.config["surrogate"]["classifier"] and (len(Y)==1 or max(pdist(Y.values, metric="euclidean")) <= 2.):
+        elif not self.config["surrogate"]["classifier"] and (len(Y) == 1 or self.should_create_leaf(Y.to_numpy())):
             if len(Y) == 1:
                 self.return_value = Y.to_numpy()[0]
                 self.represented_nodes = len(Y)
@@ -103,13 +128,19 @@ class Single_Attribute_Node():
         min_val = None
         
         if self.config["surrogate"]["use_FI"]:
-            
-            FI_val = FICalcs[self.config["FI"]["grouping"]](FI, out_logits)
+            if self.config["surrogate"]["multi_tree"]:
+        
+                FI_val = FI.mean()
+            else:
+                
+                FI_val = FICalcs[self.config["FI"]["grouping"]](FI, out_logits)
+        
             
         for var in buckets.keys():
             
             #heuristics[var] = []
             #if len(buckets[var]) != 1:
+                
                 for bucket in buckets[var]:
                     
                     # calculate entropy 
@@ -133,18 +164,35 @@ class Single_Attribute_Node():
                     heuristic_left  = 0 if len(indicies_left) == 0 else splitting_functions[self.config["surrogate"]["criterion"]](Y_left)
                     heuristic_right = 0 if len(indicies_right) == 0 else splitting_functions[self.config["surrogate"]["criterion"]](Y_right)
                 
-                    
+                    heuristic_all = splitting_functions[self.config["surrogate"]["criterion"]](Y)
                    
                     #heuristics[var].append(val)
-                    val = len(Y_left)/len(Y)*heuristic_left + len(Y_right)/len(Y)*heuristic_right
+                    val = heuristic_all - (len(Y_left)/len(Y)*heuristic_left + len(Y_right)/len(Y)*heuristic_right)
                     if self.config["surrogate"]["use_FI"] and type(FI) != type(None):
                         #FI_val = FICalcs["Var"](FI, out_logits)
                         #val = val * (1/FI_val[var].iloc[0])
                         # WORKS:
                         #val = ALPHA*val + BETA*FI_val[var].iloc[0]
-                        FI_left = FICalcs[self.config["FI"]["grouping"]](FI.loc[indicies_left], out_logits.loc[indicies_left])
-                        FI_right = FICalcs[self.config["FI"]["grouping"]](FI.loc[indicies_right], out_logits.loc[indicies_right])
-                        val = FI_left[var].iloc[0]*len(Y_left)/len(Y)*heuristic_left + FI_right[var].iloc[0]*len(Y_right)/len(Y)*heuristic_right
+                        """DO FOR CONTRIBUTION BASED FI"""
+                        #FI_left = FICalcs[self.config["FI"]["grouping"]](FI.loc[indicies_left], out_logits.loc[indicies_left])
+                        #FI_right = FICalcs[self.config["FI"]["grouping"]](FI.loc[indicies_right], out_logits.loc[indicies_right])
+                        #val = FI_left[var].iloc[0]*len(Y_left)/len(Y)*heuristic_left + FI_right[var].iloc[0]*len(Y_right)/len(Y)*heuristic_right
+
+                        if self.config["surrogate"]["multi_tree"]:
+                            #val = (1/(FI_val[var] + 0.0000000001)) * val
+                            #val = len(Y_left)/len(Y)*heuristic_left*1/(FI.loc[indicies_left][var].mean()+.00000001) + len(Y_right)/len(Y)*heuristic_right*1/(FI.loc[indicies_right][var].mean()+.00000001)
+                            e = 0.0000000001
+                            FI_all = FI_val[var] + e
+                            FI_left = FI[var].loc[indicies_left].mean() + e
+                            FI_right = FI[var].loc[indicies_right].mean() + e
+                            
+                            val = (FI_all)*(heuristic_all - (len(Y_left)/len(Y)*heuristic_left + len(Y_right)/len(Y)*heuristic_right) 
+                                   #+ (1/FI_all)*(len(Y_left)/len(Y)*(FI_left) + len(Y_right)/len(Y)*(FI_right)))
+                            )
+                            #val =  (1/(FI_val[var] + 0.0000000001)) * (len(Y_left)/len(Y)*heuristic_left + len(Y_right)/len(Y)*heuristic_right)
+                        else:
+                            
+                            val = (FI_val[var].iloc[0]) * val
                     #     FI_val_left = FICalcs[self.config["FI"]["grouping"]](FI.loc[indicies_left], out_logits.loc[indicies_left])
                     #     if FI_val_left[var].iloc[0] == 0:
                     #         FI_val_left[var].iloc[0] = .00001
@@ -155,7 +203,7 @@ class Single_Attribute_Node():
                     #     val = (1/FI_val_left[var].iloc[0])*len(Y_left)/len(Y)*heuristic_left + (1/FI_val_right[var].iloc[0])*len(Y_right)/len(Y)*heuristic_right
                     # else:
                     
-                    if min_val == None or min_val > val:
+                    if min_val == None or min_val < val:
                         min_val = val
                         min_var = var
                         min_bucket = bucket
