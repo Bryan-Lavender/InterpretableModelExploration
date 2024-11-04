@@ -102,18 +102,20 @@ class TwoDWeights_LRPModel(nn.Module):
         # print([i for i in self.model.modules()])
         vectors = []
         input_relevance = []
-        for i in range(len(relevance)):
-            vector = torch.zeros_like(relevance)  # Create a zero vector of the same shape
-            vector[i] = relevance[i]  # Set the i-th position to the corresponding relevance value
-            vectors.append(vector)
+        with torch.no_grad():
+            for i in range(len(relevance)):
+                vector = torch.zeros_like(relevance)  # Create a zero vector of the same shape
+                vector[i] = relevance[i]  # Set the i-th position to the corresponding relevance value
+                vectors.append(vector)
 
-        # Display the generated vectors
-        for v in vectors:
-            relevance = v
-            for layer, activation in zip(self.layers, self.activations[::-1]):
-                relevance = self.propagate_relevance(relevance, layer, activation)
-            
-            input_relevance.append(relevance)
+            # Display the generated vectors
+            for v in vectors:
+                relevance = v
+                for layer, activation in zip(self.layers, self.activations[::-1]):
+                    relevance = self.propagate_relevance(relevance, layer, activation)
+                
+                input_relevance.append(relevance)
+        self.activations = []
         return input_relevance
 
 
@@ -125,6 +127,7 @@ class TwoDWeights_LRPModel(nn.Module):
             rel = self.backward_relevance_propagation(out)
             print("relevence", rel)
             return out,rel
+        
         out = self.forward(point)
         return out,self.backward_relevance_propagation(out)
     

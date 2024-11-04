@@ -9,8 +9,8 @@ class SurrogateModel():
         self.model = DecisionTree(config, FI=FI_calc)
         self.config = config
     
-    def fit(self,X,Y):
-        self.model.fit(X,Y)
+    def fit(self,X,Y,FI_in = None, out_logits=None):
+        self.model.fit(X,Y,FI_in = FI_in, out_logits=out_logits)
 
     def forward(self, X):
         is_pass = False
@@ -53,10 +53,16 @@ class SurrogateModel():
         return {"feature": self.model.root.feature_index, "range": self.model.root.val_bucket}
     
     def Save(self, FilenameEnder="tree.json"):
-        path = "SavedCustomTree/"+self.config["env"]["env_name"]+"/"+self.config["sampler"]["sample_type"]+"/"+self.config["surrogate"]["criterion"]+"/"+str(self.config["sampler"]["num_samples"])+"/"+FilenameEnder
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        with open(path, "w") as filename:
-            json.dump(self.model.dictionary_rep, path, indent=4)
+        if self.config["surrogate"]["multi_tree"]:
+            path = "SavedCustomTreeMets/"+FilenameEnder
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(path, "w") as filename:
+                json.dump(self.model.dictionary_reps, filename, indent=4)
+        else:
+            path = "SavedCustomTreeMets/"+FilenameEnder
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(path, "w") as filename:
+                json.dump(self.model.dictionary_rep, filename, indent=4)
     
     def tree_traversal(self):
         print(self.model.get_dict_representation())
@@ -156,7 +162,7 @@ class LIME():
                 np.save(out_path, output)
             np.save(sample_path, samples.to("cpu").numpy())
         surr_output = self.surr_model.forward(samples)
-        if self.config["surrogate"]["classifier"]:
+        if self.config["env"]["discrete"]:
             output = np.argmax(output, axis = 1)
             matches = surr_output == output
             num_matches = np.sum(matches)
@@ -172,7 +178,7 @@ class LIME():
     
     def get_metrics(self):
         mets = self.surr_model.model.get_metrics()
-        global_mets = {"Policy_Captured": self.percent_Correct(), "Uniform_Captured": self.uniform_Correct()}
+        global_mets = {"Policy_Captured": float(self.percent_Correct()), "Uniform_Captured": float(self.uniform_Correct())}
         global_mets.update(mets)
         return global_mets
 

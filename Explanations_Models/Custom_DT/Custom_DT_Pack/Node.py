@@ -63,7 +63,7 @@ class Single_Attribute_Node():
 
             self.left_node = -1
             self.right_node = -1
-            return {"Value": self.return_value},self.depth
+            return {"Value": int(self.return_value)},self.depth
         
         #elif not self.config["surrogate"]["classifier"] and (len(Y)==1 or max(pdist(Y.values, metric="euclidean")) <= self.config["surrogate"]["tree_cutoff"] ):
         #elif not self.config["surrogate"]["classifier"] and len(Y)==1:# or max(pdist(Y.values, metric="euclidean")) <= self.config["surrogate"]["tree_cutoff"] ):
@@ -82,7 +82,11 @@ class Single_Attribute_Node():
 
             self.left_node = -1
             self.right_node = -1
-            return {"Value": self.return_value},self.depth
+            to_return = []
+           
+            for i in self.return_value:
+                to_return.append(float(i))
+            return {"Value": to_return},self.depth
         else:
             buckets = self.bucket(X)
             
@@ -101,8 +105,8 @@ class Single_Attribute_Node():
             else:
                 left_dict, left_max = self.left_node.fit(X.loc[indicies_left], Y.loc[indicies_left], self.depth)
                 right_dict, right_max = self.right_node.fit(X.loc[indicies_right], Y.loc[indicies_right],self.depth)
-         
-            return {"Feature": self.feature_index, "Bucket": self.val_bucket, "Left_Child": left_dict, "Right_Child": right_dict}, max(left_max, right_max)
+            
+            return {"Feature": self.feature_index, "Bucket": float(self.val_bucket), "Left_Child": left_dict, "Right_Child": right_dict}, max(left_max, right_max)
     
     def bucket(self, X, feature_types = None):
         buckets = {}
@@ -174,25 +178,32 @@ class Single_Attribute_Node():
                         # WORKS:
                         #val = ALPHA*val + BETA*FI_val[var].iloc[0]
                         """DO FOR CONTRIBUTION BASED FI"""
-                        #FI_left = FICalcs[self.config["FI"]["grouping"]](FI.loc[indicies_left], out_logits.loc[indicies_left])
-                        #FI_right = FICalcs[self.config["FI"]["grouping"]](FI.loc[indicies_right], out_logits.loc[indicies_right])
-                        #val = FI_left[var].iloc[0]*len(Y_left)/len(Y)*heuristic_left + FI_right[var].iloc[0]*len(Y_right)/len(Y)*heuristic_right
+                        if self.config["FI"]["method"] == "LRP":
+                            if self.config["surrogate"]["multi_tree"]:
+                                FI_left = FI.loc[indicies_left].mean()
+                                FI_right =FI.loc[indicies_right].mean()
+                                val = FI_left[var]*len(Y_left)/len(Y)*heuristic_left + FI_right[var]*len(Y_right)/len(Y)*heuristic_right
+                            else:
+                                FI_left = FICalcs[self.config["FI"]["grouping"]](FI.loc[indicies_left], out_logits.loc[indicies_left])
+                                FI_right = FICalcs[self.config["FI"]["grouping"]](FI.loc[indicies_right], out_logits.loc[indicies_right])
+                                val = FI_left[var].iloc[0]*len(Y_left)/len(Y)*heuristic_left + FI_right[var].iloc[0]*len(Y_right)/len(Y)*heuristic_right
 
-                        if self.config["surrogate"]["multi_tree"]:
-                            #val = (1/(FI_val[var] + 0.0000000001)) * val
-                            #val = len(Y_left)/len(Y)*heuristic_left*1/(FI.loc[indicies_left][var].mean()+.00000001) + len(Y_right)/len(Y)*heuristic_right*1/(FI.loc[indicies_right][var].mean()+.00000001)
-                            e = 0.0000000001
-                            FI_all = FI_val[var] + e
-                            FI_left = FI[var].loc[indicies_left].mean() + e
-                            FI_right = FI[var].loc[indicies_right].mean() + e
-                            
-                            val = (FI_all)*(heuristic_all - (len(Y_left)/len(Y)*heuristic_left + len(Y_right)/len(Y)*heuristic_right) 
-                                   #+ (1/FI_all)*(len(Y_left)/len(Y)*(FI_left) + len(Y_right)/len(Y)*(FI_right)))
-                            )
-                            #val =  (1/(FI_val[var] + 0.0000000001)) * (len(Y_left)/len(Y)*heuristic_left + len(Y_right)/len(Y)*heuristic_right)
-                        else:
-                            
-                            val = (FI_val[var].iloc[0]) * val
+                        elif self.config["FI"]["method"] == "FD":
+                            if self.config["surrogate"]["multi_tree"]:
+                                #val = (1/(FI_val[var] + 0.0000000001)) * val
+                                #val = len(Y_left)/len(Y)*heuristic_left*1/(FI.loc[indicies_left][var].mean()+.00000001) + len(Y_right)/len(Y)*heuristic_right*1/(FI.loc[indicies_right][var].mean()+.00000001)
+                                e = 0.0000000001
+                                FI_all = FI_val[var] + e
+                                #FI_left = FI[var].loc[indicies_left].mean() + e
+                                #FI_right = FI[var].loc[indicies_right].mean() + e
+                                
+                                val = (FI_all)*(heuristic_all - (len(Y_left)/len(Y)*heuristic_left + len(Y_right)/len(Y)*heuristic_right) 
+                                    #+ (1/FI_all)*(len(Y_left)/len(Y)*(FI_left) + len(Y_right)/len(Y)*(FI_right)))
+                                )
+                                #val =  (1/(FI_val[var] + 0.0000000001)) * (len(Y_left)/len(Y)*heuristic_left + len(Y_right)/len(Y)*heuristic_right)
+                            else:
+                                
+                                val = (FI_val[var].iloc[0]) * val
                     #     FI_val_left = FICalcs[self.config["FI"]["grouping"]](FI.loc[indicies_left], out_logits.loc[indicies_left])
                     #     if FI_val_left[var].iloc[0] == 0:
                     #         FI_val_left[var].iloc[0] = .00001
@@ -202,14 +213,22 @@ class Single_Attribute_Node():
                     #     #val = val * (1/FI_val[var].iloc[0])
                     #     val = (1/FI_val_left[var].iloc[0])*len(Y_left)/len(Y)*heuristic_left + (1/FI_val_right[var].iloc[0])*len(Y_right)/len(Y)*heuristic_right
                     # else:
-                    
-                    if min_val == None or min_val < val:
-                        min_val = val
-                        min_var = var
-                        min_bucket = bucket
+                    if self.config["FI"]["method"] == "FD":
+                        if min_val == None or min_val < val:
+                            min_val = val
+                            min_var = var
+                            min_bucket = bucket
 
-                        curr_ind_left = indicies_left
-                        curr_ind_right = indicies_right
+                            curr_ind_left = indicies_left
+                            curr_ind_right = indicies_right
+                    elif self.config["FI"]["method"] == "LRP":
+                        if min_val == None or min_val > val:
+                            min_val = val
+                            min_var = var
+                            min_bucket = bucket
+
+                            curr_ind_left = indicies_left
+                            curr_ind_right = indicies_right
                     
             #else:
 

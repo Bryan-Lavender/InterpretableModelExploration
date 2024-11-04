@@ -16,9 +16,9 @@ class FiniteDifferences():
                 x[i] = x[i] - 2*h
                 partial = (partial - self.model.forward(x))/(2*h)
                 x[i] = x[i] + h
-                jac.append(partial.detach().numpy())
+                jac.append(partial.cpu().numpy())
             if out_mat:
-                out = self.model.forward(x)
+                out = self.model.forward(x).cpu().numpy()
             
             jac = np.stack(jac).T
         
@@ -26,12 +26,12 @@ class FiniteDifferences():
                 return (out, jac)
             return jac
     
-    def get_FI(self, X, h=.5, out = True):
+    def get_FI(self, X, h=.5, out = False):
         X = torch.tensor(X, dtype = torch.float32)
         jacs = []
         outs = []
         for i in X:
-            outt, jac = self.Relevence(i, h=h, out = out)
+            outt, jac = self.Relevence(i, h=h, out_mat = out)
             jacs.append(jac)
             outs.append(outt)
         return (np.stack(outs), np.stack(jacs))

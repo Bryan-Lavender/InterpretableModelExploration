@@ -5,8 +5,9 @@ surrogate:
     tree_cutoff: 1.
     bucket_alg: "half_split"
     use_FI: True
+    multi_tree: True
 FI:
-    method: "LRP"
+    method: "FD"
 sampler:
     sample_type: &sample_type "Policy" #possible: {"Policy", "Uniform", "Gaussian"}
     #NEEDED GENERALLY
@@ -22,7 +23,7 @@ sampler:
     use_dist: False
 
 picture:
-    labels: ["root-z", "root-y", "bthigh", "bshin", "bfoot", "fthigh", "fshin","ffoot","vel-rootx", "vel-rootz","vel-rooty", "vel-bthigh", "vel-bshin", "vel-bfoot", "vel-fthigh", "vel-fshin","vel-ffoot", "x-tip coordinate"]
+    labels: ["root-z", "root-y", "bthigh", "bshin", "bfoot", "fthigh", "fshin","ffoot","vel-rootx", "vel-rootz","vel-rooty", "vel-bthigh", "vel-bshin", "vel-bfoot", "vel-fthigh", "vel-fshin","vel-ffoot"]
     class_names: ["back thigh", "back shin", "back foot", "front thigh", "front shin", "front foot"]
 
 metric_hyperparameters:
