@@ -1,4 +1,4 @@
-from .Custom_DT_Pack.DecisionTree import DecisionTree
+from .Custom_DT_NonRec.DecisionTree import DecisionTree
 import torch
 import os
 import numpy as np
@@ -126,9 +126,10 @@ class LIME():
             y_true = path["action"]
             
             TP = 0
-            true_positive = sum(yp == yt for yp, yt in zip(y_pred, y_true))
-            percent_correct = true_positive/len(y_true)
+            
             if self.config["surrogate"]["classifier"]:
+                true_positive = sum(yp == yt for yp, yt in zip(y_pred, y_true))
+                percent_correct = true_positive/len(y_true)
             #     for i in list(range(self.config["env"]["action_dim"])):
             #         print(i)
             #         print((y_true == i) & (y_pred == i))
@@ -141,7 +142,11 @@ class LIME():
                     print(f"Percent Correct: {percent_correct:.2f}%")
                 PCs.append(percent_correct)
             else:
-                val = np.mean((y_pred - y_true)**2)
+                y_pred = np.stack(y_pred)
+                norm = np.linalg.norm(y_pred - y_true, axis=1)
+                val = np.mean(norm)
+                # print(y_pred)
+                # print(y_true)
                 PCs.append(val)
         return np.mean(PCs)
 
@@ -169,7 +174,9 @@ class LIME():
             percentage_correct = (num_matches / len(surr_output)) 
             return percentage_correct
         else:
-            return np.mean(((surr_output - output)**2).mean(axis=0))
+            surr_output = np.stack(surr_output)
+            norm = np.linalg.norm(surr_output - output, axis=1)
+            return np.mean(norm)
 
         
     

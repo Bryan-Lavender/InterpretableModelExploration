@@ -27,7 +27,7 @@ picture:
     class_names: ["back thigh", "back shin", "back foot", "front thigh", "front shin", "front foot"]
 
 metric_hyperparameters:
-    tree_execution_samples: 5000
+    tree_execution_samples: 50
     sample_sequence: [3,5,10,20,30,40,60,80,100,150,200,250,300,400,500,600,1200]
     citerions: ['squared_error', 'friedman_mse', 'absolute_error', 'poisson']
     

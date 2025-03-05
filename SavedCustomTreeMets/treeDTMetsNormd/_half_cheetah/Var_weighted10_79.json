@@ -1,0 +1,176 @@
+{
+    "Feature": "root-y",
+    "Value": 3.2989606857299805,
+    "Left_Child": {
+        "Feature": "root-y",
+        "Value": 1.264862298965454,
+        "Left_Child": {
+            "Feature": null,
+            "Value": null,
+            "Left_Child": null,
+            "Right_Child": null,
+            "Output": [
+                0.31368163228034973,
+                -0.29631155729293823,
+                0.16512978076934814,
+                0.26422178745269775,
+                0.523200511932373,
+                0.024881085380911827
+            ]
+        },
+        "Right_Child": {
+            "Feature": "bthigh",
+            "Value": 0.22762207686901093,
+            "Left_Child": {
+                "Feature": "bshin",
+                "Value": 0.08643709868192673,
+                "Left_Child": {
+                    "Feature": null,
+                    "Value": null,
+                    "Left_Child": null,
+                    "Right_Child": null,
+                    "Output": [
+                        -0.697978675365448,
+                        0.6711826920509338,
+                        0.11083006113767624,
+                        -0.7424375414848328,
+                        0.12202607840299606,
+                        0.12956508994102478
+                    ]
+                },
+                "Right_Child": {
+                    "Feature": "bshin",
+                    "Value": 0.42345935106277466,
+                    "Left_Child": {
+                        "Feature": null,
+                        "Value": null,
+                        "Left_Child": null,
+                        "Right_Child": null,
+                        "Output": [
+                            -0.9619967937469482,
+                            0.9219420552253723,
+                            0.18612849712371826,
+                            -0.5238199830055237,
+                            0.29988953471183777,
+                            0.17573495209217072
+                        ]
+                    },
+                    "Right_Child": {
+                        "Feature": null,
+                        "Value": null,
+                        "Left_Child": null,
+                        "Right_Child": null,
+                        "Output": [
+                            -0.9341791868209839,
+                            0.8243420124053955,
+                            0.15984758734703064,
+                            -0.8171603083610535,
+                            0.35728028416633606,
+                            0.18216447532176971
+                        ]
+                    }
+                }
+            },
+            "Right_Child": {
+                "Feature": null,
+                "Value": null,
+                "Left_Child": null,
+                "Right_Child": null,
+                "Output": [
+                    0.6447993516921997,
+                    -0.5320286750793457,
+                    -0.003320981515571475,
+                    -0.9416893124580383,
+                    -0.6913493871688843,
+                    -0.2841609716415405
+                ]
+            }
+        }
+    },
+    "Right_Child": {
+        "Feature": "bthigh",
+        "Value": -0.1300451010465622,
+        "Left_Child": {
+            "Feature": "bshin",
+            "Value": 0.6521013975143433,
+            "Left_Child": {
+                "Feature": null,
+                "Value": null,
+                "Left_Child": null,
+                "Right_Child": null,
+                "Output": [
+                    1.1006070375442505,
+                    -1.030906081199646,
+                    0.11950761824846268,
+                    -0.0892924815416336,
+                    0.13907456398010254,
+                    -0.3964079022407532
+                ]
+            },
+            "Right_Child": {
+                "Feature": null,
+                "Value": null,
+                "Left_Child": null,
+                "Right_Child": null,
+                "Output": [
+                    1.2580779790878296,
+                    -1.1640291213989258,
+                    0.14325542747974396,
+                    0.04707096517086029,
+                    0.2134174108505249,
+                    -0.4368966519832611
+                ]
+            }
+        },
+        "Right_Child": {
+            "Feature": "bthigh",
+            "Value": 0.4667723476886749,
+            "Left_Child": {
+                "Feature": "bthigh",
+                "Value": 0.25684696435928345,
+                "Left_Child": {
+                    "Feature": null,
+                    "Value": null,
+                    "Left_Child": null,
+                    "Right_Child": null,
+                    "Output": [
+                        0.6955199837684631,
+                        -0.5712804198265076,
+                        -0.0033170885872095823,
+                        -0.9126511812210083,
+                        -0.6589978933334351,
+                        -0.2996225655078888
+                    ]
+                },
+                "Right_Child": {
+                    "Feature": null,
+                    "Value": null,
+                    "Left_Child": null,
+                    "Right_Child": null,
+                    "Output": [
+                        0.4941067397594452,
+                        -0.35452139377593994,
+                        7.16217327862978e-05,
+                        -0.8643264174461365,
+                        -0.6573666334152222,
+                        -0.2192709892988205
+                    ]
+                }
+            },
+            "Right_Child": {
+                "Feature": null,
+                "Value": null,
+                "Left_Child": null,
+                "Right_Child": null,
+                "Output": [
+                    -0.15645064413547516,
+                    0.3932238221168518,
+                    0.04488007724285126,
+                    -1.1554899215698242,
+                    -0.7289063334465027,
+                    -0.035329122096300125
+                ]
+            }
+        }
+    }
+}

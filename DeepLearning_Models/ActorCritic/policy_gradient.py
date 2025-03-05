@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-
+import json
 import os
 from ..utils.general import get_logger, Progbar, export_plot
 from ..utils.network_utils import np2torch
@@ -269,6 +269,7 @@ class PolicyGradient(object):
         loss = -(log_probs * advantages).mean()
         loss.backward()
         self.optimizer.step()
+        return loss
         ### END CODE HERE ###
 
     def train(self):
@@ -300,12 +301,12 @@ class PolicyGradient(object):
 
             # advantage will depend on the baseline implementation
             advantages = self.calculate_advantage(returns, observations)
-
+            
             # run training operations
             if self.config["model_training"]["use_baseline"]:
-                self.baseline_network.update_baseline(returns, observations)
-            self.update_policy(observations, actions, advantages)
-
+                baseline_loss = self.baseline_network.update_baseline(returns, observations)
+            policy_loss = self.update_policy(observations, actions, advantages)
+            self.save_training_data(self.config["output"]['training_info'], observations, actions, rewards, returns, advantages, baseline_loss, policy_loss)
             # logging
             if t % self.config["model_training"]["summary_freq"] == 0:
                 self.update_averages(total_rewards, all_total_rewards)
@@ -383,3 +384,60 @@ class PolicyGradient(object):
         # record one game at the end
         if self.config["env"]["record"]:
             self.record()
+
+    def save_training_data(self, filename, observations, actions, rewards, returns, advantages, baseline_loss, policy_loss):
+        """
+        Saves training data (observations, actions, rewards, returns, advantages, baseline loss, policy loss) into a JSON file.
+        
+        Args:
+            filename (str): Path to save the JSON file.
+            observations (np.ndarray): Array of observations.
+            actions (np.ndarray): Array of actions.
+            rewards (np.ndarray): Array of rewards.
+            returns (torch.Tensor or np.ndarray): Returns (discounted future rewards).
+            advantages (torch.Tensor or np.ndarray): Advantages.
+            baseline_loss (torch.Tensor, float, or None): Baseline loss (if baseline is used).
+            policy_loss (torch.Tensor or float): Policy loss.
+        """
+        # Ensure all data is JSON-serializable
+        def to_serializable(obj):
+            if isinstance(obj, torch.Tensor):
+                return obj.cpu().item() if obj.numel() == 1 else obj.cpu().numpy().tolist()
+            elif isinstance(obj, np.ndarray):
+                return obj.tolist()  # Convert numpy arrays to lists
+            elif isinstance(obj, (float, int, list, dict, type(None))):  
+                return obj  # Assume it's already serializable
+            else:
+                return str(obj)  # Fallback conversion
+
+        new_entry = {
+            "observations": to_serializable(observations),
+            "actions": to_serializable(actions),
+            "rewards": to_serializable(rewards),
+            "returns": to_serializable(returns),
+            "advantages": to_serializable(advantages),
+            "baseline_loss": to_serializable(baseline_loss),
+            "policy_loss": to_serializable(policy_loss),
+        }
+        dir_path = os.path.dirname(filename)
+        if dir_path:  # If there's a directory path (not just a filename in current dir)
+            os.makedirs(dir_path, exist_ok=True)
+        if os.path.exists(filename):
+            with open(filename, "r") as f:
+                try:
+                    data = json.load(f)  # Load existing data
+                    if not isinstance(data, list):  # Ensure it is a list
+                        data = [data]
+                except json.JSONDecodeError:
+                    data = []  # If the file is corrupted or empty, start fresh
+        else:
+            data = []  # New file
+
+        # Append new entry
+        data.append(new_entry)
+
+        # Write updated data back to file
+        with open(filename, "w") as f:
+            json.dump(data, f, indent=4)
+
+        print(f"Appended training data to {filename}")

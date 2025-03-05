@@ -94,3 +94,4 @@ class BaselineNetwork(nn.Module):
         loss = loss_fn(baseline_predictions.squeeze(), returns)
         loss.backward()
         self.optimizer.step()
+        return loss

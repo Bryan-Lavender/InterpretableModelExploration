@@ -35,10 +35,11 @@ hyper_params:
     layer_size: 256
 
 output:
-    output_path: &output_path !join ["ModelWeights/", *env_name, "-{}-"]
+    output_path: &output_path !join ["ModelWeightsTDA/", *env_name, "-{}-"]
     actor_output: !join [*output_path, "/actor.weights.pt"]
     critic_output: !join [*output_path, "/critic.weights.pt"]
     log_path: !join [*output_path, "/log.txt"]
     scores_output: !join [*output_path, "/scores.npy"]
     plot_output: !join [*output_path, "/scores.png"]
     record_path: !join [*output_path, "/VIDYA"]
+    training_info: !join [*output_path, "/training_info.json"]

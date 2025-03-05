@@ -49,7 +49,7 @@ else:
 fileLoc = fileLoc + "/" +config_env + "/"
 os.makedirs(fileLoc, exist_ok=True)
 
-for samps in [3,5,10,20,40,60,100]:
+for samps in [100]:
     print("running")
     print(samps)
     for ep in tqdm(range(NumEpochs)):
@@ -60,7 +60,7 @@ for samps in [3,5,10,20,40,60,100]:
         FI = FeatureImportance(config, Runner.model.network)
         DTMode = LIME(config, Runner, FI_getta=FI)
         
-        DTMod = LIME(config, Runner)
+        #DTMod = LIME(config, Runner)
         X,Y = DTMode.sample_set()
         out,FI_in = DTMode.surr_model.model.get_FI(X)
         config["surrogate"]["use_FI"] = False
@@ -76,7 +76,7 @@ for samps in [3,5,10,20,40,60,100]:
         with open(fileLoc + config["FI"]["grouping"] + str(samps), "a") as file:
             jstring = json.dumps(mets)
             file.write(jstring + '\n')
-        DTMode.surr_model.Save(FilenameEnder="tree" + fileLoc+config["FI"]["grouping"] + str(samps)+str(ep)+".json")
+        DTMode.surr_model.Save(FilenameEnder="tree" + fileLoc+config["FI"]["grouping"] + str(samps)+"_"+str(ep)+".json")
         #DTMode.surr_model.model.delete_tree()
         del DTMode
         del FI
@@ -97,7 +97,7 @@ for samps in [3,5,10,20,40,60,100]:
         with open(fileLoc + config["FI"]["grouping"] + str(samps), "a") as file:
             jstring = json.dumps(mets)
             file.write(jstring + '\n')
-        DTMode.surr_model.Save(FilenameEnder="tree" + fileLoc+config["FI"]["grouping"] + str(samps)+".json")
+        DTMode.surr_model.Save(FilenameEnder="tree" + fileLoc+config["FI"]["grouping"] + str(samps)+"_"+str(ep)+".json")
     
         
 
@@ -116,7 +116,7 @@ for samps in [3,5,10,20,40,60,100]:
             jstring = json.dumps(mets)
             file.write(jstring + '\n')
         
-        DTMode.surr_model.Save(FilenameEnder="tree" + fileLoc+config["FI"]["grouping"] + str(samps)+".json")
+        DTMode.surr_model.Save(FilenameEnder="tree" + fileLoc+config["FI"]["grouping"] + str(samps)+"_"+str(ep)+".json")
 
         #print(config["FI"]["grouping"])
         config["surrogate"]["use_FI"] = True
@@ -133,7 +133,7 @@ for samps in [3,5,10,20,40,60,100]:
             jstring = json.dumps(mets)
             file.write(jstring + '\n')
             
-        DTMode.surr_model.Save(FilenameEnder="tree" + fileLoc+config["FI"]["grouping"] + str(samps)+".json")
+        DTMode.surr_model.Save(FilenameEnder="tree" + fileLoc+config["FI"]["grouping"] + str(samps)+"_"+str(ep)+".json")
         
         
         # #print(config["FI"]["grouping"])
