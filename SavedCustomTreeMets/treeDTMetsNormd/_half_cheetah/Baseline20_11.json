@@ -1,0 +1,338 @@
+{
+    "Feature": "fthigh",
+    "Value": -0.21833491325378418,
+    "Left_Child": {
+        "Feature": "root-y",
+        "Value": 1.5721170902252197,
+        "Left_Child": {
+            "Feature": null,
+            "Value": null,
+            "Left_Child": null,
+            "Right_Child": null,
+            "Output": [
+                0.29058659076690674,
+                -0.2719413638114929,
+                0.031234219670295715,
+                -0.6257345080375671,
+                -0.3523939549922943,
+                -0.1706765592098236
+            ]
+        },
+        "Right_Child": {
+            "Feature": "bthigh",
+            "Value": 0.08204442262649536,
+            "Left_Child": {
+                "Feature": "root-z",
+                "Value": 0.06064026802778244,
+                "Left_Child": {
+                    "Feature": "root-z",
+                    "Value": 0.060573745518922806,
+                    "Left_Child": {
+                        "Feature": "root-z",
+                        "Value": 0.06043395772576332,
+                        "Left_Child": {
+                            "Feature": null,
+                            "Value": null,
+                            "Left_Child": null,
+                            "Right_Child": null,
+                            "Output": [
+                                0.2677266299724579,
+                                -0.23467130959033966,
+                                0.030537039041519165,
+                                -0.5953795909881592,
+                                -0.34287384152412415,
+                                -0.16060090065002441
+                            ]
+                        },
+                        "Right_Child": {
+                            "Feature": null,
+                            "Value": null,
+                            "Left_Child": null,
+                            "Right_Child": null,
+                            "Output": [
+                                0.26766759157180786,
+                                -0.23466791212558746,
+                                0.030549585819244385,
+                                -0.5953329801559448,
+                                -0.3427809774875641,
+                                -0.16062316298484802
+                            ]
+                        }
+                    },
+                    "Right_Child": {
+                        "Feature": null,
+                        "Value": null,
+                        "Left_Child": null,
+                        "Right_Child": null,
+                        "Output": [
+                            0.2678595185279846,
+                            -0.23484663665294647,
+                            0.03051711991429329,
+                            -0.5952640175819397,
+                            -0.3427686393260956,
+                            -0.16068007051944733
+                        ]
+                    }
+                },
+                "Right_Child": {
+                    "Feature": "root-z",
+                    "Value": 0.06068998575210571,
+                    "Left_Child": {
+                        "Feature": "root-z",
+                        "Value": 0.060683272778987885,
+                        "Left_Child": {
+                            "Feature": null,
+                            "Value": null,
+                            "Left_Child": null,
+                            "Right_Child": null,
+                            "Output": [
+                                0.2690882980823517,
+                                -0.23593439161777496,
+                                0.03030473366379738,
+                                -0.5949185490608215,
+                                -0.34281572699546814,
+                                -0.16100022196769714
+                            ]
+                        },
+                        "Right_Child": {
+                            "Feature": "ffoot",
+                            "Value": 0.02237190119922161,
+                            "Left_Child": {
+                                "Feature": "bfoot",
+                                "Value": 0.006560894660651684,
+                                "Left_Child": {
+                                    "Feature": "vel-fshin",
+                                    "Value": 7.193520445980539e-08,
+                                    "Left_Child": {
+                                        "Feature": "bthigh",
+                                        "Value": 0.08079995959997177,
+                                        "Left_Child": {
+                                            "Feature": null,
+                                            "Value": null,
+                                            "Left_Child": null,
+                                            "Right_Child": null,
+                                            "Output": [
+                                                0.2691363990306854,
+                                                -0.23597760498523712,
+                                                0.03029647469520569,
+                                                -0.5949041843414307,
+                                                -0.34281641244888306,
+                                                -0.16101326048374176
+                                            ]
+                                        },
+                                        "Right_Child": {
+                                            "Feature": "bshin",
+                                            "Value": -0.1393088698387146,
+                                            "Left_Child": {
+                                                "Feature": "bthigh",
+                                                "Value": 0.08079997450113297,
+                                                "Left_Child": {
+                                                    "Feature": null,
+                                                    "Value": null,
+                                                    "Left_Child": null,
+                                                    "Right_Child": null,
+                                                    "Output": [
+                                                        0.2691364288330078,
+                                                        -0.23597760498523712,
+                                                        0.030296478420495987,
+                                                        -0.5949042439460754,
+                                                        -0.34281647205352783,
+                                                        -0.16101326048374176
+                                                    ]
+                                                },
+                                                "Right_Child": {
+                                                    "Feature": null,
+                                                    "Value": null,
+                                                    "Left_Child": null,
+                                                    "Right_Child": null,
+                                                    "Output": [
+                                                        0.2691363990306854,
+                                                        -0.23597757518291473,
+                                                        0.030296482145786285,
+                                                        -0.5949043035507202,
+                                                        -0.3428165018558502,
+                                                        -0.16101326048374176
+                                                    ]
+                                                }
+                                            },
+                                            "Right_Child": {
+                                                "Feature": "root-z",
+                                                "Value": 0.06068631261587143,
+                                                "Left_Child": {
+                                                    "Feature": null,
+                                                    "Value": null,
+                                                    "Left_Child": null,
+                                                    "Right_Child": null,
+                                                    "Output": [
+                                                        0.2691364288330078,
+                                                        -0.23597760498523712,
+                                                        0.03029647469520569,
+                                                        -0.5949042439460754,
+                                                        -0.34281647205352783,
+                                                        -0.16101326048374176
+                                                    ]
+                                                },
+                                                "Right_Child": {
+                                                    "Feature": null,
+                                                    "Value": null,
+                                                    "Left_Child": null,
+                                                    "Right_Child": null,
+                                                    "Output": [
+                                                        0.2691364288330078,
+                                                        -0.23597760498523712,
+                                                        0.03029647469520569,
+                                                        -0.5949042439460754,
+                                                        -0.34281647205352783,
+                                                        -0.16101326048374176
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "Right_Child": {
+                                        "Feature": "bthigh",
+                                        "Value": 0.08079996705055237,
+                                        "Left_Child": {
+                                            "Feature": null,
+                                            "Value": null,
+                                            "Left_Child": null,
+                                            "Right_Child": null,
+                                            "Output": [
+                                                0.2691364586353302,
+                                                -0.23597760498523712,
+                                                0.030296478420495987,
+                                                -0.5949042439460754,
+                                                -0.34281644225120544,
+                                                -0.16101326048374176
+                                            ]
+                                        },
+                                        "Right_Child": {
+                                            "Feature": null,
+                                            "Value": null,
+                                            "Left_Child": null,
+                                            "Right_Child": null,
+                                            "Output": [
+                                                0.2691364586353302,
+                                                -0.2359776347875595,
+                                                0.03029647469520569,
+                                                -0.5949042439460754,
+                                                -0.34281644225120544,
+                                                -0.16101327538490295
+                                            ]
+                                        }
+                                    }
+                                },
+                                "Right_Child": {
+                                    "Feature": null,
+                                    "Value": null,
+                                    "Left_Child": null,
+                                    "Right_Child": null,
+                                    "Output": [
+                                        0.26913636922836304,
+                                        -0.23597754538059235,
+                                        0.030296489596366882,
+                                        -0.5949042439460754,
+                                        -0.34281644225120544,
+                                        -0.16101323068141937
+                                    ]
+                                }
+                            },
+                            "Right_Child": {
+                                "Feature": "bfoot",
+                                "Value": 0.006560896057635546,
+                                "Left_Child": {
+                                    "Feature": null,
+                                    "Value": null,
+                                    "Left_Child": null,
+                                    "Right_Child": null,
+                                    "Output": [
+                                        0.2691363990306854,
+                                        -0.23597760498523712,
+                                        0.03029647469520569,
+                                        -0.5949042439460754,
+                                        -0.34281641244888306,
+                                        -0.16101324558258057
+                                    ]
+                                },
+                                "Right_Child": {
+                                    "Feature": null,
+                                    "Value": null,
+                                    "Left_Child": null,
+                                    "Right_Child": null,
+                                    "Output": [
+                                        0.2691363990306854,
+                                        -0.23597760498523712,
+                                        0.030296478420495987,
+                                        -0.5949042439460754,
+                                        -0.34281644225120544,
+                                        -0.16101326048374176
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "Right_Child": {
+                        "Feature": "root-z",
+                        "Value": 0.060726556926965714,
+                        "Left_Child": {
+                            "Feature": null,
+                            "Value": null,
+                            "Left_Child": null,
+                            "Right_Child": null,
+                            "Output": [
+                                0.26932188868522644,
+                                -0.2361409217119217,
+                                0.030264392495155334,
+                                -0.5948531031608582,
+                                -0.3428250849246979,
+                                -0.16106082499027252
+                            ]
+                        },
+                        "Right_Child": {
+                            "Feature": null,
+                            "Value": null,
+                            "Left_Child": null,
+                            "Right_Child": null,
+                            "Output": [
+                                0.26922398805618286,
+                                -0.23606835305690765,
+                                0.03028252348303795,
+                                -0.5948628783226013,
+                                -0.3427952229976654,
+                                -0.16104725003242493
+                            ]
+                        }
+                    }
+                }
+            },
+            "Right_Child": {
+                "Feature": null,
+                "Value": null,
+                "Left_Child": null,
+                "Right_Child": null,
+                "Output": [
+                    0.27365490794181824,
+                    -0.23989112675189972,
+                    0.029493752866983414,
+                    -0.5936092734336853,
+                    -0.34307464957237244,
+                    -0.16214384138584137
+                ]
+            }
+        }
+    },
+    "Right_Child": {
+        "Feature": null,
+        "Value": null,
+        "Left_Child": null,
+        "Right_Child": null,
+        "Output": [
+            -0.10899432003498077,
+            0.03474258631467819,
+            0.09592385590076447,
+            -0.5359510183334351,
+            -0.004934459924697876,
+            -0.03232321888208389
+        ]
+    }
+}
