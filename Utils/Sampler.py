@@ -47,9 +47,9 @@ def trajectory_sampler(config, model, n, k=None, get_activations = False, use_se
     for i in range(n-1):
         if use_seed:
             seed = np.random.randint(10001, high = 100000)
-            new_state_action = env_runner.runner(seed=seed)
+            new_state_action = env_runner.runner(seed=seed,return_activations=get_activations)
         else:
-            new_state_action = env_runner.runner()
+            new_state_action = env_runner.runner(return_activations=get_activations)
         state_action["observation"] = np.concatenate((state_action["observation"],new_state_action["observation"]))
         state_action["reward"] = np.concatenate((state_action["reward"],new_state_action["reward"]))
         state_action["action"] = np.concatenate((state_action["action"],new_state_action["action"]))

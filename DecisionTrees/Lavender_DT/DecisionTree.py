@@ -36,6 +36,7 @@ class WeightedDecisionTrees():
         return value
 
     def save(self, filepath):
+        os.makedirs(os.path.dirname(filepath), exist_ok=True)
         if self.tree_dict != None:
             with open(filepath, "wb")as file :
                 pickle.dump(self.tree_dict, file)

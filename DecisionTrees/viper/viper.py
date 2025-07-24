@@ -73,7 +73,7 @@ class VIPER_reSampled():
         Y_filtered = Y[mask]
         indices = np.nonzero(mask)[0]
 
-        return X_filtered, Y_filtered, indices
+        return X_filtered, Y_filtered
     
     def save(self, path):
         os.makedirs(os.path.dirname(path), exist_ok=True)

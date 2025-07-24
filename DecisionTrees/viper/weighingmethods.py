@@ -2,7 +2,7 @@ import numpy as np
 import torch
 
 def Q_diff(Activations):
-    activations = torch.tensor(Activations.to_numpy())
+    activations = torch.tensor(Activations)
     diffs = []
     for i in activations:
         dis = torch.distributions.Categorical(logits = i)

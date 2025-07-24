@@ -2,12 +2,12 @@ import numpy as np
 from .Criterion import entropy, MSE
 from .ShouldCreateLeaf import one_class_left, STD_diff
 from .SplittingFunctions import regular_info_gain, ImportanceWeighing, ImportanceMinimization
-from .WeighingFunctions import Variance_Weighted_sum, Max_Average_FI, Max_Over_Outcome, Double_Average
+from .WeighingFunctions import Variance_Weighted_sum, Max_Average_FI, Max_Over_Outcome, Double_Average, Classification
 
 criterions = {"entropy": entropy, "MSE": MSE}
 leaf_creator = {"single_class": one_class_left, "STD": STD_diff}
 splitting_functions = {"normal": regular_info_gain, "ImportanceMinimization": ImportanceMinimization, "ImportanceWeighing": ImportanceWeighing}
-weighing_methods = {"normal": None, "Var_Weighted": Variance_Weighted_sum, "Max_Avg": Max_Average_FI, "Max_All": Max_Over_Outcome, "Double_Avg":Double_Average}
+weighing_methods = {"normal": None, "Var_Weighted": Variance_Weighted_sum, "Max_Avg": Max_Average_FI, "Max_All": Max_Over_Outcome, "Double_Avg":Double_Average, "Class": Classification}
 class DecisionTreeCreator():
     def __init__(self, config):
         self.criterion = criterions[config["criterion"]]

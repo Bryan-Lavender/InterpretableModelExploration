@@ -37,6 +37,7 @@ class FeatureSpecifcTrees():
         return value
 
     def save(self, filepath):
+        os.makedirs(os.path.dirname(filepath), exist_ok=True)
         if self.tree_dict != None:
             os.makedirs(os.path.dirname(filepath), exist_ok=True)
             with open(filepath, "wb")as file :

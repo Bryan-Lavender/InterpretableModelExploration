@@ -4,8 +4,10 @@ from FeatureImportance.FI import FeatureImportance
 import time
 import numpy as np
 import pickle
+import json
 import os
 from Utils.Metrics import Trajectory, Uniform, EpisodeDivergence
+from torch.utils.tensorboard import SummaryWriter
 
 from DecisionTrees.Lavender_DT.DecisionTree import WeightedDecisionTrees
 from DecisionTrees.Feature_specific_trees.DecisionTree import FeatureSpecifcTrees
@@ -26,23 +28,53 @@ def create_tree_config(config):
             "object_names": None}
         
 def get_static_metrics(DOMAIN, baseline, path):
-    Set_X = np.load("Test_Sets/Uniform_Samples/" + DOMAIN + "X.npy")
-    Set_Y = np.load("Test_Sets/Uniform_Samples/" + DOMAIN + "Y.npy")
+    Set_X = np.load("Test_Sets/Uniform_Samples/" + DOMAIN + "/" + "X.npy")
+    Set_Y = np.load("Test_Sets/Uniform_Samples/" + DOMAIN + "/" + "Y.npy")
     Uniform_metric =  Uniform(config, baseline, model, loaded_set=(Set_X, Set_Y)), 
     #ram, possibly
     
-    Set_X = np.load("Test_Sets/Trajectory_Samples/" + DOMAIN + "X.npy")
-    Set_Y = np.load("Test_Sets/Trajectory_Samples/" + DOMAIN + "Y.npy")
+    Set_X = np.load("Test_Sets/Trajectory_Samples/" + DOMAIN + "/" + "X.npy")
+    Set_Y = np.load("Test_Sets/Trajectory_Samples/" + DOMAIN + "/" + "Y.npy")
     Trajectory_metric = Trajectory(config, baseline, model, loaded_set = (Set_X, Set_Y))
     os.makedirs(os.path.dirname(path), exist_ok=True)
     obj = {"Uniform": Uniform_metric, "Trajector": Trajectory_metric}
-    with open(path, "wb") as f:
-        pickle.dump(obj, f)
+    with open(path, "w") as f:
+        json.dump(obj, f)
     
 #lets begin with classification domains
 domains = ["cartpole", "acrobot", "lunar_lander"]
 times = {}
 times_all = {}
+DOMAIN = "cartpole"
+config = read_config(DOMAIN)
+model = load_weights(config)
+create_tree_config(config)
+weighing_type = "normal"
+for traj_num in [1,2,3,4,5,6,7,8,9,10]:
+    for run in range(100):
+        X,Y, Activations = trajectory_sampler(config, model, n = traj_num, get_activations=True)
+        out = None
+        FI = None
+        config["Tree"] = {"criterion": "entropy", 
+                "leaf_creator": "single_class", 
+                "splitting_function": "normal",
+                "weighing_method": weighing_type,
+                "object_names": None}
+
+        tree_type = "weighted_" + weighing_type
+        print(DOMAIN + " traj_num: " + str(traj_num) + " run: " + str(run) + " ~ " + tree_type)
+        if tree_type not in times.keys():
+            times[tree_type] = []
+        tree = WeightedDecisionTrees(config)
+        start = time.time()
+        tree.fit(X,Y,FI,out)
+        path_str = "Runs/" + DOMAIN + "/"+tree_type+"/" + "Traj_Num_" + str(traj_num) + "/tree/" + str(run) + ".pkl"
+        tree.save(path_str)
+        times[tree_type].append(time.time() - start)
+        path_str = "Runs/" + DOMAIN + "/"+tree_type+"/" + "Traj_Num_" + str(traj_num) + "/static_metrics/" + str(run) + ".json"
+
+        metrics = get_static_metrics(DOMAIN, tree, path_str)
+exit()
 for DOMAIN in domains:
     config = read_config(DOMAIN)
     model = load_weights(config)
@@ -50,16 +82,17 @@ for DOMAIN in domains:
     #increase trajectories from 1 to 100
     for traj_num in [1,2,3,4,5,6,7,8,9,10]:
         #save results of 100 trees made this way
+
         for run in range(100): 
             
             X,Y, Activations = trajectory_sampler(config, model, n = traj_num, get_activations=True)
-            
             FI_calculator = FeatureImportance("FD", model.network)
             out, FI = FI_calculator.Relevence(X)
 
             #scikit learn trees
             
             tree_type = "baseline"
+            print(DOMAIN + " traj_num: " + str(traj_num) + " run: " + str(run) + " ~ " + tree_type)
             if tree_type not in times.keys():
                 times[tree_type] = []
             baseline = SKLTree(config)
@@ -68,15 +101,16 @@ for DOMAIN in domains:
             path_str = "Runs/" + DOMAIN + "/"+tree_type+"/" + "Traj_Num_" + str(traj_num) + "/tree/" + str(run) + ".pkl"
             baseline.save(path_str)
             times[tree_type].append(time.time() - start)
-            path_str = "Runs/" + DOMAIN + "/"+tree_type+"/" + "Traj_Num_" + str(traj_num) + "/static_metrics/" + str(run) + ".pkl"
+            path_str = "Runs/" + DOMAIN + "/"+tree_type+"/" + "Traj_Num_" + str(traj_num) + "/static_metrics/" + str(run) + ".json"
 
-            metrics = get_static_metrics(DOMAIN, baseline)
+            metrics = get_static_metrics(DOMAIN, baseline, path_str)
             
             
             start = time.time()
 
             #VIPER_resample
             tree_type = "VIPER_resample"
+            print(DOMAIN + " traj_num: " + str(traj_num) + " run: " + str(run) + " ~ " + tree_type)
             if tree_type not in times.keys():
                 times[tree_type] = []
             VIPER_re = VIPER_reSampled(config)
@@ -85,13 +119,14 @@ for DOMAIN in domains:
             path_str = "Runs/" + DOMAIN + "/"+tree_type+"/" + "Traj_Num_" + str(traj_num) + "/tree/" + str(run) + ".pkl"
             VIPER_re.save(path_str)
             times[tree_type].append(time.time() - start)
-            path_str = "Runs/" + DOMAIN + "/"+tree_type+"/" + "Traj_Num_" + str(traj_num) + "/static_metrics/" + str(run) + ".pkl"
+            path_str = "Runs/" + DOMAIN + "/"+tree_type+"/" + "Traj_Num_" + str(traj_num) + "/static_metrics/" + str(run) + ".json"
 
-            metrics = get_static_metrics(DOMAIN, VIPER_re)
+            metrics = get_static_metrics(DOMAIN, VIPER_re, path_str)
             
 
             #VIPER_resample
             tree_type = "VIPER_weigh"
+            print(DOMAIN + " traj_num: " + str(traj_num) + " run: " + str(run) + " ~ " + tree_type)
             if tree_type not in times.keys():
                 times[tree_type] = []
             VIPER_weigh = VIPER_weighted(config)
@@ -100,9 +135,9 @@ for DOMAIN in domains:
             path_str = "Runs/" + DOMAIN + "/"+tree_type+"/" + "Traj_Num_" + str(traj_num) + "/tree/" + str(run) + ".pkl"
             VIPER_weigh.save(path_str)
             times[tree_type].append(time.time() - start)
-            path_str = "Runs/" + DOMAIN + "/"+tree_type+"/" + "Traj_Num_" + str(traj_num) + "/static_metrics/" + str(run) + ".pkl"
+            path_str = "Runs/" + DOMAIN + "/"+tree_type+"/" + "Traj_Num_" + str(traj_num) + "/static_metrics/" + str(run) + ".json"
 
-            metrics = get_static_metrics(DOMAIN, VIPER_weigh)
+            metrics = get_static_metrics(DOMAIN, VIPER_weigh, path_str)
 
             #Weighted DecisionTrees
             weighing_types = ["Var_Weighted", "Max_Avg", "Max_All", "Double_Avg", "Class"]
@@ -115,6 +150,7 @@ for DOMAIN in domains:
                 "object_names": None}
 
                 tree_type = "weighted_" + weighing_type
+                print(DOMAIN + " traj_num: " + str(traj_num) + " run: " + str(run) + " ~ " + tree_type)
                 if tree_type not in times.keys():
                     times[tree_type] = []
                 tree = WeightedDecisionTrees(config)
@@ -123,9 +159,9 @@ for DOMAIN in domains:
                 path_str = "Runs/" + DOMAIN + "/"+tree_type+"/" + "Traj_Num_" + str(traj_num) + "/tree/" + str(run) + ".pkl"
                 tree.save(path_str)
                 times[tree_type].append(time.time() - start)
-                path_str = "Runs/" + DOMAIN + "/"+tree_type+"/" + "Traj_Num_" + str(traj_num) + "/static_metrics/" + str(run) + ".pkl"
+                path_str = "Runs/" + DOMAIN + "/"+tree_type+"/" + "Traj_Num_" + str(traj_num) + "/static_metrics/" + str(run) + ".json"
 
-                metrics = get_static_metrics(DOMAIN, tree)
+                metrics = get_static_metrics(DOMAIN, tree, path_str)
             
             #feature_chosen
             weighing_types = ["Var_Weighted", "Max_Avg", "Max_All", "Double_Avg", "Class"]
@@ -138,6 +174,7 @@ for DOMAIN in domains:
                 "object_names": None}
 
                 tree_type = "FIselected_" + weighing_type
+                print(DOMAIN + " traj_num: " + str(traj_num) + " run: " + str(run) + " ~ " + tree_type)
                 if tree_type not in times.keys():
                     times[tree_type] = []
                 tree = FeatureSpecifcTrees(config)
@@ -146,12 +183,12 @@ for DOMAIN in domains:
                 path_str = "Runs/" + DOMAIN + "/"+tree_type+"/" + "Traj_Num_" + str(traj_num) + "/tree/" + str(run) + ".pkl"
                 tree.save(path_str)
                 times[tree_type].append(time.time() - start)
-                path_str = "Runs/" + DOMAIN + "/"+tree_type+"/" + "Traj_Num_" + str(traj_num) + "/static_metrics/" + str(run) + ".pkl"
+                path_str = "Runs/" + DOMAIN + "/"+tree_type+"/" + "Traj_Num_" + str(traj_num) + "/static_metrics/" + str(run) + ".json"
 
-                metrics = get_static_metrics(DOMAIN, tree)
+                metrics = get_static_metrics(DOMAIN, tree, path_str)
         
-        times_all[DOMAIN + "_" + traj_num] = times 
+        times_all[DOMAIN + "_" + str(traj_num)] = times 
 
-with open("RunTimes", "wb") as f:
-    pickle.dump(times_all, f)
+with open("RunTimes.json", "wb") as f:
+    json.dump(times_all, f)
 

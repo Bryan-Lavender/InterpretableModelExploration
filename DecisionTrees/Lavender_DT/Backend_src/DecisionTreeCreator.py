@@ -19,7 +19,7 @@ class DecisionTreeCreator():
             self.minimization = True
         self.use_fi = True
 
-        if config["criterion"] == "normal":
+        if config["splitting_function"] == "normal":
             self.use_fi = False
 
         self.weighing_method = weighing_methods[config["weighing_method"]]
@@ -88,8 +88,10 @@ class DecisionTreeCreator():
                         weight_L = self.weighing_method(FI_sorted[:i], out_logit_sorted[:i])
                         weight_R = self.weighing_method(FI_sorted[i:], out_logit_sorted[i:])
                         weight = (weight_L[j], weight_R[j])
-                    else:
+                    elif self.use_fi:
                         weight = weights[j]
+                    else:
+                        weight = 1
                     gain = self.splitting_function(y_sorted, y_left, y_right, weight, self.criterion)
                     if (self.minimization and gain < best_gain) or (not self.minimization and gain > best_gain):
                         best_gain = gain
