@@ -24,6 +24,9 @@ class WeightedDecisionTrees():
         value = None
         current_dict = self.tree_dict
         while value == None:
+            if None in current_dict.keys():
+                current_dict = current_dict[None]
+                continue
             if "value" in current_dict.keys():
                 return current_dict["value"]
             
